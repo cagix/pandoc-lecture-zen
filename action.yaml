@@ -1,0 +1,39 @@
+name: 'Pandoc-Lecture-Zen'
+description: 'This action will run the new Pandoc-Lecture toolchain from https://github.com/cagix/pandoc-lecture-zen (Ubuntu runner only)'
+
+inputs:
+  mktarget:
+    description: 'Make target to run'
+    default: 'gfm'
+    required: false
+  pandoc_data:
+    description: 'Temporary folder for Pandoc filters: Will be overwritten!'
+    required: true
+  metadata:
+    description: 'Metadata file (.yaml)'
+    required: true
+  publish_dir:
+    description: 'Prefix for output'
+    default: '_gfm'
+    required: false
+
+runs:
+  using: "composite"
+  steps:
+    - name: 'Copy Makefile'
+      run: cp  ${{ github.action_path }}/Makefile  .
+      shell: bash
+
+    - name: 'Copy Templates'
+      run: |
+        mkdir -p  ${{ inputs.pandoc_data }}
+        cp -r  ${{ github.action_path }}/scripts  ${{ inputs.pandoc_data }}
+      shell: bash
+
+    - name: 'Compile document(s)'
+      run: make  ${{ inputs.mktarget }}  PANDOC_DATA=${{ inputs.pandoc_data }}  METADATA=${{ inputs.metadata }}  OUTPUT_DIR=${{ inputs.publish_dir }}
+      shell: bash
+
+    - name: 'ls -lags'
+      run: ls -lags
+      shell: bash
