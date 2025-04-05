@@ -17,6 +17,7 @@ metadata:
 
 
 ## writer options
+strip-comments: true
 
 
 ## citation rendering

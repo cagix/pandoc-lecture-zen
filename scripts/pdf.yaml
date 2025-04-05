@@ -17,6 +17,8 @@ metadata:
 
 
 ## writer options
+strip-comments: true
+
 ## scrbook: https://ftp.tu-chemnitz.de/pub/tex/macros/latex/contrib/koma-script/doc/scrguide-de.pdf
 template: eisvogel
 
