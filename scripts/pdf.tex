@@ -1,0 +1,18 @@
+%-- Undefine Beamer's \pause command
+\newcommand{\pause}{}
+
+%-- Examples
+\newcommand{\ex}[1]{\hfill #1}
+
+%-- Coloured boxes
+\usepackage{tcolorbox}
+%\tcbuselibrary{breakable}      %% TODO: needs pdfcol.sty, which is missing in pandoc/extra
+
+\newtcolorbox{info-box}{colback=cyan!5!white,arc=0pt,outer arc=0pt,colframe=cyan!60!black}
+\newtcolorbox{tip-box}{colback=green!5!white,arc=0pt,outer arc=0pt,colframe=green!60!black}
+\newtcolorbox{important-box}{colback=blue!5!white,arc=0pt,outer arc=0pt,colframe=blue!60!black}
+\newtcolorbox{warning-box}{colback=orange!5!white,arc=0pt,outer arc=0pt,colframe=orange!80!black}
+\newtcolorbox{error-box}{colback=red!5!white,arc=0pt,outer arc=0pt,colframe=red!75!black}
+
+\definecolor{origin}{rgb}{0.93,0.93,0.93}       %% #ededed
+\newcommand{\origin}[1]{\colorbox{origin}{{\tiny #1 }}}

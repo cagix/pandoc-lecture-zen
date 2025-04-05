@@ -1,0 +1,25 @@
+## Options for GFM output
+## (see https://pandoc.org/MANUAL.html#defaults-files)
+
+## general options
+from: markdown+lists_without_preceding_blankline+mark
+to: gfm
+
+
+## reader options
+filters:
+  - ${.}/deprecated.lua
+  - ${.}/handout.lua
+  - ${.}/gfm.lua
+
+metadata:
+  link-citations: true
+
+
+## writer options
+
+
+## citation rendering
+citeproc: true
+#csl: https://www.zotero.org/styles/springer-lecture-notes-in-computer-science
+#csl: https://www.zotero.org/styles/springer-basic-author-date

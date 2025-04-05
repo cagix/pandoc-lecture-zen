@@ -1,0 +1,42 @@
+## Options for PDF output
+## (see https://pandoc.org/MANUAL.html#defaults-files)
+
+## general options
+from: markdown+lists_without_preceding_blankline+mark+rebase_relative_paths
+to: pdf
+
+
+## reader options
+filters:
+  - ${.}/deprecated.lua
+  - ${.}/handout.lua
+  - ${.}/pdf.lua
+
+metadata:
+  link-citations: true
+
+
+## writer options
+## scrbook: https://ftp.tu-chemnitz.de/pub/tex/macros/latex/contrib/koma-script/doc/scrguide-de.pdf
+template: eisvogel
+
+variables:
+  papersize: a4
+  fontsize: 11pt
+  colorlinks: true
+
+include-in-header:
+  - ${.}/pdf.tex
+
+
+## options for specific writer
+listings: true
+
+pdf-engine: pdflatex
+pdf-engine-opt: '-shell-escape'
+
+
+## citation rendering
+citeproc: true
+#csl: https://www.zotero.org/styles/springer-lecture-notes-in-computer-science
+#csl: https://www.zotero.org/styles/springer-basic-author-date
