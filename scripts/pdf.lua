@@ -153,15 +153,16 @@ function Pandoc(doc)
         blocks:insert(pandoc.HorizontalRule())
     end
 
-    -- 3. Main Doc (shift headings if necessary)
-    blocks:extend(doc.blocks:walk {
-        Header = function(el)
-            if doc.meta.shift_headings then
+    -- 3. Main Doc (shift headings level if necessary)
+    if doc.meta.shift_headings then
+        doc.blocks = doc.blocks:walk {
+            Header = function(el)
                 el.level = el.level + 1
+                return el
             end
-            return el
-        end
-    })
+        }
+    end
+    blocks:extend(doc.blocks)
 
     -- 4. Literature
     if doc.meta.readings then
