@@ -230,7 +230,8 @@ function Pandoc(doc)
 
     -- 7. License
     if doc.meta.license_footer and (not doc.meta.has_license) then
-        blocks:insert(pandoc.RawBlock('latex', '\\vfill'))
+--        blocks:insert(pandoc.RawBlock('latex', '\\newpage'))
+        blocks:insert(pandoc.RawBlock('latex', '\\vspace*{\\fill}'))
         blocks:insert(pandoc.HorizontalRule())
         blocks:extend(doc.meta.license_footer)
 
