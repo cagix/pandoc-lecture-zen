@@ -116,7 +116,7 @@ pdf: $(ROOT_DEPS) $$(PDF_MARKDOWN_TARGETS)
 
 $(PDF_MARKDOWN_TARGETS): $$(subst _,/,$$(patsubst $(OUTPUT_DIR)/%.pdf,%.md,$$@))
 	$(create-folder)
-	$(PANDOC) $(OPTIONS)  -d $(PANDOC_DATA)/scripts/pdf.yaml  -V footer-center=$(shell git log -n 1 --pretty=reference -- $<)  $<  -o $@
+	$(PANDOC) $(OPTIONS)  -d $(PANDOC_DATA)/scripts/pdf.yaml  -V footer-center="$(shell git log -n 1 --pretty=reference -- $<)"  $<  -o $@
 
 
 ## Canned recipe for creating output folder
