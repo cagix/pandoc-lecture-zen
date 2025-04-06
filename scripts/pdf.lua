@@ -118,7 +118,7 @@ function Pandoc(doc)
     if doc.meta.tldr or doc.meta.youtube or doc.meta.attachments then
         local quote = pandoc.List()
 
---        quote:insert(pandoc.RawBlock('latex', '\\begin{important-box}'))
+        quote:insert(pandoc.RawBlock('latex', '\\begin{important-box}'))
         quote:insert(pandoc.RawBlock('latex', '\\small'))
 
         if doc.meta.tldr then
@@ -146,7 +146,7 @@ function Pandoc(doc)
             quote:insert(pandoc.BulletList(bullets))
         end
 
---        quote:insert(pandoc.RawBlock('latex', '\\end{important-box}'))
+        quote:insert(pandoc.RawBlock('latex', '\\end{important-box}'))
         quote:insert(pandoc.RawBlock('latex', '\\normalsize'))
 
         blocks:extend(quote)
@@ -174,7 +174,6 @@ function Pandoc(doc)
     if doc.meta.outcomes or doc.meta.quizzes or doc.meta.challenges then
         local quote = pandoc.List()
 
---        quote:insert(pandoc.RawBlock('latex', '\\begin{tip-box}'))
         quote:insert(pandoc.RawBlock('latex', '\\small'))
 
         if doc.meta.outcomes then
@@ -184,8 +183,10 @@ function Pandoc(doc)
                     bullets:insert(pandoc.Str(k .. ": " .. pandoc.utils.stringify(v)))
                 end
             end
+            quote:insert(pandoc.RawBlock('latex', '\\begin{tip-box}'))
             quote:insert(pandoc.Plain(pandoc.Strong("Lernziele")))
             quote:insert(pandoc.BulletList(bullets))
+            quote:insert(pandoc.RawBlock('latex', '\\end{tip-box}'))
         end
 
         if doc.meta.quizzes then
@@ -194,16 +195,19 @@ function Pandoc(doc)
                 local str_link = pandoc.utils.stringify(v.link)
                 bullets:insert(pandoc.Link(v.name or str_link, str_link))
             end
+            quote:insert(pandoc.RawBlock('latex', '\\begin{tip-box}'))
             quote:insert(pandoc.Plain(pandoc.Strong("Quizzes")))
             quote:insert(pandoc.BulletList(bullets))
+            quote:insert(pandoc.RawBlock('latex', '\\end{tip-box}'))
         end
 
         if doc.meta.challenges then
+            quote:insert(pandoc.RawBlock('latex', '\\begin{tip-box}'))
             quote:insert(pandoc.Plain(pandoc.Strong("Challenges")))
             quote:extend(doc.meta.challenges)
+            quote:insert(pandoc.RawBlock('latex', '\\end{tip-box}'))
         end
 
---        quote:insert(pandoc.RawBlock('latex', '\\end{tip-box}'))
         quote:insert(pandoc.RawBlock('latex', '\\normalsize'))
 
         blocks:insert(pandoc.HorizontalRule())
@@ -215,13 +219,13 @@ function Pandoc(doc)
     if refs and #refs > 0 then
         local quote = pandoc.List()
 
---        quote:insert(pandoc.RawBlock('latex', '\\begin{info-box}'))
         quote:insert(pandoc.RawBlock('latex', '\\small'))
+        quote:insert(pandoc.RawBlock('latex', '\\begin{info-box}'))
 
         quote:insert(pandoc.Plain(pandoc.Strong("Quellen")))
         quote:extend(doc.meta.refs)
 
---        quote:insert(pandoc.RawBlock('latex', '\\end{info-box}'))
+        quote:insert(pandoc.RawBlock('latex', '\\end{info-box}'))
         quote:insert(pandoc.RawBlock('latex', '\\normalsize'))
 
         blocks:insert(pandoc.HorizontalRule())
