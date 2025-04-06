@@ -26,6 +26,7 @@ variables:
   papersize: a4
   fontsize: 11pt
   colorlinks: true
+#  code-block-font-size: '\footnotesize'
 
 include-in-header:
   - ${.}/pdf.tex
