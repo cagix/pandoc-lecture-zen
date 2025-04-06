@@ -105,7 +105,7 @@ gfm: $(ROOT_DEPS) $$(GFM_MARKDOWN_TARGETS) $$(GFM_IMAGE_TARGETS)
 
 $(GFM_MARKDOWN_TARGETS):
 	$(create-folder)
-	$(PANDOC) $(OPTIONS)  -d $(PANDOC_DATA)/scripts/gfm.yaml  $<  -o $@
+	$(PANDOC) $(OPTIONS)  -d $(PANDOC_DATA)/scripts/gfm.yaml  -M lastmod="$(shell git log -n 1 --pretty=reference -- $<)"  $<  -o $@
 
 $(GFM_IMAGE_TARGETS):
 	$(create-dir-and-copy)
@@ -116,7 +116,7 @@ pdf: $(ROOT_DEPS) $$(PDF_MARKDOWN_TARGETS)
 
 $(PDF_MARKDOWN_TARGETS): $$(subst _,/,$$(patsubst $(OUTPUT_DIR)/%.pdf,%.md,$$@))
 	$(create-folder)
-	$(PANDOC) $(OPTIONS)  -d $(PANDOC_DATA)/scripts/pdf.yaml  -V footer-center="$(shell git log -n 1 --pretty=reference -- $<)"  $<  -o $@
+	$(PANDOC) $(OPTIONS)  -d $(PANDOC_DATA)/scripts/pdf.yaml  -M lastmod="$(shell git log -n 1 --pretty=reference -- $<)"  $<  -o $@
 
 
 ## Canned recipe for creating output folder

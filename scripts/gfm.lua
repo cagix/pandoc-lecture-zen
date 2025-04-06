@@ -208,6 +208,11 @@ function Pandoc(doc)
         end
     end
 
+    -- 8. Last modified
+    if doc.meta.lastmod then
+        blocks:insert(pandoc.BlockQuote(pandoc.Plain({pandoc.Strong('Last modified:'), pandoc.Str(" "), doc.meta.lastmod})))
+    end
+
 
     -- finé
     return pandoc.Pandoc(blocks, doc.meta)
