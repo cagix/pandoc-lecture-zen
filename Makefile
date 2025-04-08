@@ -83,7 +83,7 @@ $(ROOT_DEPS): $(METADATA)
 	$(PANDOC)  -L $(PANDOC_DATA)/scripts/makedeps.lua  -M prefix=$(OUTPUT_DIR)  -f markdown -t markdown  $<  -o $@
 
 ## this needs docker/pandoc, so do only include (and build) when required
-ifeq ($(MAKECMDGOALS), $(filter $(MAKECMDGOALS),gfm pdf))
+ifeq ($(MAKECMDGOALS), $(filter $(MAKECMDGOALS),gfm docsify pdf))
 -include $(ROOT_DEPS)
 PDF_MARKDOWN_TARGETS    = $(addprefix $(OUTPUT_DIR)/,$(subst /,_, $(patsubst %.md,%.pdf, $(MARKDOWN_SRC))))
 endif
@@ -102,21 +102,27 @@ endif
 
 ## GFM: Process markdown with pandoc
 gfm: $(ROOT_DEPS) $$(GFM_MARKDOWN_TARGETS) $$(GFM_IMAGE_TARGETS)
+gfm: OPTIONS           += -d $(PANDOC_DATA)/scripts/gfm.yaml
+
+## DOCSIFY: Process markdown with pandoc
+docsify: $(ROOT_DEPS) $$(GFM_MARKDOWN_TARGETS) $$(GFM_IMAGE_TARGETS)
+docsify: OPTIONS       += -d $(PANDOC_DATA)/scripts/docsify.yaml
+
+## PDF: Process markdown with pandoc and latex
+pdf: $(ROOT_DEPS) $$(PDF_MARKDOWN_TARGETS)
+pdf: OPTIONS           += -d $(PANDOC_DATA)/scripts/pdf.yaml
+
 
 $(GFM_MARKDOWN_TARGETS):
 	$(create-folder)
-	$(PANDOC) $(OPTIONS)  -d $(PANDOC_DATA)/scripts/gfm.yaml  -M lastmod="$(shell git log -n 1 --pretty=reference -- $<)"  $<  -o $@
+	$(PANDOC) $(OPTIONS)  -M lastmod="$(shell git log -n 1 --pretty=reference -- $<)"  $<  -o $@
 
 $(GFM_IMAGE_TARGETS):
 	$(create-dir-and-copy)
 
-
-## PDF: Process markdown with pandoc and latex
-pdf: $(ROOT_DEPS) $$(PDF_MARKDOWN_TARGETS)
-
 $(PDF_MARKDOWN_TARGETS): $$(subst _,/,$$(patsubst $(OUTPUT_DIR)/%.pdf,%.md,$$@))
 	$(create-folder)
-	$(PANDOC) $(OPTIONS)  -d $(PANDOC_DATA)/scripts/pdf.yaml  -M lastmod="$(shell git log -n 1 --pretty=reference -- $<)"  $<  -o $@
+	$(PANDOC) $(OPTIONS)  -M lastmod="$(shell git log -n 1 --pretty=reference -- $<)"  $<  -o $@
 
 
 ## Canned recipe for creating output folder
@@ -139,4 +145,4 @@ endef
 ###############################################################################
 
 
-.PHONY: all docker gfm pdf clean distclean
+.PHONY: all docker gfm docsify pdf clean distclean
