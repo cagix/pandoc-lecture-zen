@@ -24,7 +24,7 @@ template: eisvogel
 
 variables:
   papersize: a4
-  fontsize: 11pt
+  fontsize: 10pt
   colorlinks: true
 #  code-block-font-size: '\footnotesize'
 
