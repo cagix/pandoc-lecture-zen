@@ -163,8 +163,6 @@ function Pandoc(doc)
     if doc.meta.tldr or doc.meta.youtube or doc.meta.attachments then
         local quote = pandoc.List()
 
-        quote:insert(pandoc.RawBlock("markdown", '[!IMPORTANT]'))
-
         if doc.meta.tldr then
             quote:insert(pandoc.RawBlock("markdown", '<details open>'))
             quote:insert(pandoc.RawBlock("markdown", '<summary><strong>🎯 TL;DR</strong></summary>'))
