@@ -122,31 +122,36 @@ end
 
 
 -- Handle image scaling
+-- If "width" or "web_width" parameters are present, wrap image in raw `<div style="width: ...;"> ... </div>`.
+-- If both "width" and "web_width" parameters are present, "web_width" takes precedence
+-- Caveat: We now also need to handle ‘figures’ ourselves - thus deactivating the `implicit_figures` option!
 function Image(el)
-    -- TODO: evaluate "width" value and use best matching scaling (:class=image-75, :class=image-50, :class=image-25)
---    if el.attributes["width"] then
---        return pandoc.Image("", el.src, ":class=image-75")
---    end
-
-    -- remove all attributes since Docsify won't handle this
-    el.attr = {}
-    return el
-end
-
-
--- Handle image captions
-function Figure(el)
-    -- content: [Para [Image]]
-    local img = el.content[1].content[1]
-    local title = img.title == "" and "" or (' "' .. img.title .. '"')
+    local width = el.attributes["web_width"]  or  el.attributes["width"]  or  ""
     local caption = pandoc.utils.stringify(el.caption)
 
-    -- put caption as paragraph after new image
-    return {
-        pandoc.RawBlock('markdown', '![](' .. img.src .. title ..')'),
-        pandoc.Para(caption)
-    }
+    local w = width == "" and "" or (' style="width:' .. width .. ';"')
 
+    if caption == "" then
+        -- Empty caption ("image")
+        return {
+            pandoc.RawInline('markdown', '<div' .. w .. '>'),
+            pandoc.Str('\n\n'),
+            pandoc.RawInline('markdown', '![](' .. el.src ..')'),
+            pandoc.Str('\n\n'),
+            pandoc.RawInline('markdown', '</div>')
+        }
+    else
+        -- Non-empty caption ("figure")
+        return {
+            pandoc.RawInline('markdown', '<div' .. w .. '>'),
+            pandoc.Str('\n\n'),
+            pandoc.RawInline('markdown', '![](' .. el.src ..')'),
+            pandoc.Str('\n\n'),
+            pandoc.RawInline('markdown', '</div>'),
+            pandoc.Str('\n\n'),
+            pandoc.Span(caption)
+        }
+    end
 end
 
 
