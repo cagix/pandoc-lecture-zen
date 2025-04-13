@@ -2,7 +2,7 @@
 ## (see https://pandoc.org/MANUAL.html#defaults-files)
 
 ## general options
-from: markdown+lists_without_preceding_blankline+mark
+from: markdown+lists_without_preceding_blankline+mark-implicit_figures
 to: gfm
 
 
