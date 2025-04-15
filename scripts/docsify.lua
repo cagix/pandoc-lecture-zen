@@ -129,11 +129,10 @@ function Image(el)
     local width = el.attributes["web_width"]  or  el.attributes["width"]  or  ""
     local caption = pandoc.utils.stringify(el.caption)
 
-    local w = width == "" and "" or (' style="width:' .. width .. '; margin: 0 auto;"')
-
     if caption == "" then
         -- Empty caption ("image")
         -- Markdown image needs to be separated with blank lines from context for Docsify to recognise
+        local w = width == "" and "" or (' style="width:' .. width .. ';"')
         return {
             pandoc.RawInline('markdown', '<div' .. w .. '>'),
             pandoc.Str('\n\n'),
@@ -144,6 +143,7 @@ function Image(el)
     else
         -- Non-empty caption ("figure")
         -- Markdown image needs to be separated with blank lines from context for Docsify to recognise
+        local w = width == "" and "" or (' style="width:' .. width .. '; margin: 0 auto;"')
         return {
             pandoc.RawInline('markdown', '<div style="text-align: center;">'),
             pandoc.RawInline('markdown', '<div' .. w .. '>'),
