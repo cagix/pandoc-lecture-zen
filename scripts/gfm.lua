@@ -242,7 +242,7 @@ function Pandoc(doc)
             pandoc.RawInline('markdown', '<sup><sub>'),
             pandoc.Strong('Last modified:'),
             pandoc.Str(" "),
-            doc.meta.lastmod,
+            pandoc.RawInline('markdown', doc.meta.lastmod),
             pandoc.RawInline('markdown', '</sub></sup>')
         })))
     end
