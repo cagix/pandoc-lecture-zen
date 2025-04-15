@@ -251,7 +251,7 @@ function Pandoc(doc)
 
     -- 8. Last modified
     if doc.meta.lastmod then
-        blocks:insert(pandoc.RawBlock('latex', '\\small'))
+        blocks:insert(pandoc.RawBlock('latex', '\\scriptsize'))
         blocks:insert(pandoc.BlockQuote(pandoc.Plain({pandoc.Strong('Last modified:'), pandoc.Str(" "), doc.meta.lastmod})))
         blocks:insert(pandoc.RawBlock('latex', '\\normalsize'))
     end
