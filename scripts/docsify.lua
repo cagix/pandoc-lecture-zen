@@ -296,7 +296,11 @@ function Pandoc(doc)
 
     -- 8. Last modified
     if doc.meta.lastmod then
-        blocks:insert(pandoc.BlockQuote(pandoc.Plain({pandoc.Strong('Last modified:'), pandoc.Str(" "), doc.meta.lastmod})))
+        blocks:insert(pandoc.Plain({
+            pandoc.RawInline('markdown', '<blockquote><p><sup><sub><strong>Last modified:</strong> '),
+            doc.meta.lastmod,
+            pandoc.RawInline('markdown', '<br></sub></sup></p></blockquote>')
+        }))
     end
 
 
