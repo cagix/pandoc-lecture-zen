@@ -298,7 +298,7 @@ function Pandoc(doc)
     if doc.meta.lastmod then
         blocks:insert(pandoc.Plain({
             pandoc.RawInline('markdown', '<blockquote><p><sup><sub><strong>Last modified:</strong> '),
-            doc.meta.lastmod,
+            pandoc.RawInline('markdown', doc.meta.lastmod),
             pandoc.RawInline('markdown', '<br></sub></sup></p></blockquote>')
         }))
     end
