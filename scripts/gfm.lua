@@ -48,9 +48,11 @@ function Image(el)
     else
         -- Non-empty caption ("figure")
         return {
+            pandoc.RawInline('markdown', '<p align="center">'),
             pandoc.RawInline('markdown', '<img src="' .. el.src .. w .. '">'),
-            pandoc.Str('\n\n'),
-            pandoc.Span(caption)
+            pandoc.RawInline('markdown', '</p><p align="center">'),
+            pandoc.Span(caption),
+            pandoc.RawInline('markdown', '</p>'),
         }
     end
 end
