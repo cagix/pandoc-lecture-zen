@@ -85,7 +85,7 @@ $(ROOT_DEPS): $(METADATA)
 ## this needs docker/pandoc, so do only include (and build) when required
 ifeq ($(MAKECMDGOALS), $(filter $(MAKECMDGOALS),gfm docsify pdf))
 -include $(ROOT_DEPS)
-PDF_MARKDOWN_TARGETS    = $(addprefix $(OUTPUT_DIR)/,$(subst /,_, $(patsubst %.md,%.pdf, $(MARKDOWN_SRC))))
+PDF_MARKDOWN_TARGETS    = $(patsubst %.md,$(OUTPUT_DIR)/%.pdf,$(MARKDOWN_SRC))
 endif
 
 
@@ -120,7 +120,7 @@ $(GFM_MARKDOWN_TARGETS):
 $(GFM_IMAGE_TARGETS):
 	$(create-dir-and-copy)
 
-$(PDF_MARKDOWN_TARGETS): $$(subst _,/,$$(patsubst $(OUTPUT_DIR)/%.pdf,%.md,$$@))
+$(PDF_MARKDOWN_TARGETS): $$(patsubst $(OUTPUT_DIR)/%.pdf,%.md,$$@)
 	$(create-folder)
 	$(PANDOC) $(OPTIONS)  -M lastmod="$(shell git log -n 1 --pretty=reference -- $<)"  $<  -o $@
 
