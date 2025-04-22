@@ -1,0 +1,43 @@
+## Options for Beamer output (lecture slides)
+## (see https://pandoc.org/MANUAL.html#defaults-files)
+
+## general options
+from: markdown+lists_without_preceding_blankline+mark+rebase_relative_paths
+to: beamer
+
+
+## reader options
+filters:
+  - ${.}/deprecated.lua
+  - ${.}/slides.lua
+  - ${.}/beamer.lua
+
+metadata:
+  link-citations: false
+  suppress-bibliography: true
+
+
+## writer options
+strip-comments: true
+
+variables:
+  aspectratio: 1610
+  fontsize: smaller
+  theme: metropolis
+  themeoptions:
+    - numbering=none
+    - progressbar=foot
+
+include-in-header:
+  - ${.}/beamer.tex
+
+
+## options for specific writer
+pdf-engine: pdflatex
+pdf-engine-opt: '-shell-escape'
+
+
+## citation rendering
+citeproc: true
+#csl: https://www.zotero.org/styles/springer-lecture-notes-in-computer-science
+#csl: https://www.zotero.org/styles/springer-basic-author-date

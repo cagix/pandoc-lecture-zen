@@ -1,0 +1,52 @@
+
+%%-- Packages
+\usepackage[babel]{csquotes}
+\usepackage{xspace}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins}
+%\tcbuselibrary{breakable}      %% TODO: needs pdfcol.sty, which is missing in pandoc/extra
+%\usepackage{xcolor}            %% already included by beamer
+\usepackage{listings}           %% see https://github.com/cagix/pandoc-lecture/issues/6
+
+
+%%-- Fonts and Colors
+\definecolor{midnightblue}{rgb}{0.2,0.2,0.7}
+
+\definecolor{dkblue}{rgb}{0,0,0.6}
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{dkred}{rgb}{0.6,0,0}
+
+\definecolor{listinggray}{gray}{0.92}
+
+\definecolor{headcolor}{rgb}{0.25,0.44,0.63}  % #4070a0 as in html.css
+\definecolor{origin}{rgb}{0.93,0.93,0.93}     % #ededed as in html.css
+
+\definecolor{code}{HTML}{F2F2F2}    % #f2f2f2 as in html.css
+\definecolor{border}{HTML}{555555}  % #555 as in html.css
+
+
+%%-- CMDs/ENVs
+\newcommand{\origin}[1]{\colorbox{origin}{{\tiny #1 }}}
+\newcommand{\ex}[1]{\vfill\hfill\beamerbutton{#1}}
+
+\newtcolorbox{codeblock}{enhanced,frame hidden,colback=code,borderline={1pt}{1pt}{border,dotted}}
+\newtcbox{\inlinecode}{on line,frame hidden,colback=code,boxsep=0pt,left=1pt,right=1pt,top=2pt,bottom=2pt,boxrule=0pt}
+
+\newtcolorbox{info-box}{colback=cyan!5!white,arc=0pt,outer arc=0pt,colframe=cyan!60!black}
+\newtcolorbox{tip-box}{colback=green!5!white,arc=0pt,outer arc=0pt,colframe=green!60!black}
+\newtcolorbox{important-box}{colback=blue!5!white,arc=0pt,outer arc=0pt,colframe=blue!60!black}
+\newtcolorbox{warning-box}{colback=orange!5!white,arc=0pt,outer arc=0pt,colframe=orange!80!black}
+\newtcolorbox{error-box}{colback=red!5!white,arc=0pt,outer arc=0pt,colframe=red!75!black}
+
+
+%%-- Beamer Settings
+% Default: 128mm x 96mm => 120mm text width
+\setbeamersize{text margin left=4mm}
+\setbeamersize{text margin right=4mm}
+\setbeamertemplate{date}{}  %% prevent current date on title slide
+
+%% Chance color theme (cf. metropolis theme manual)
+%\useoutertheme{metropolis}
+%\useinnertheme{metropolis}
+%\usefonttheme{metropolis}
+%\usecolortheme{seahorse}
