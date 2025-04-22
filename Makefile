@@ -83,7 +83,7 @@ $(ROOT_DEPS): $(METADATA)
 	$(PANDOC)  -L $(PANDOC_DATA)/scripts/makedeps.lua  -M prefix=$(OUTPUT_DIR)  -f markdown -t markdown  $<  -o $@
 
 ## this needs docker/pandoc, so do only include (and build) when required
-ifeq ($(MAKECMDGOALS), $(filter $(MAKECMDGOALS),gfm docsify pdf))
+ifeq ($(MAKECMDGOALS), $(filter $(MAKECMDGOALS),gfm docsify pdf beamer))
 -include $(ROOT_DEPS)
 PDF_MARKDOWN_TARGETS    = $(patsubst %.md,$(OUTPUT_DIR)/%.pdf,$(MARKDOWN_SRC))
 endif
@@ -111,6 +111,10 @@ docsify: OPTIONS       += -d $(PANDOC_DATA)/scripts/docsify.yaml
 ## PDF: Process markdown with pandoc and latex
 pdf: $(ROOT_DEPS) $$(PDF_MARKDOWN_TARGETS)
 pdf: OPTIONS           += -d $(PANDOC_DATA)/scripts/pdf.yaml
+
+## Beamer: Process markdown with pandoc and latex
+beamer: $(ROOT_DEPS) $$(PDF_MARKDOWN_TARGETS)
+beamer: OPTIONS        += -d $(PANDOC_DATA)/scripts/beamer.yaml
 
 
 $(GFM_MARKDOWN_TARGETS):
@@ -145,4 +149,4 @@ endef
 ###############################################################################
 
 
-.PHONY: all docker gfm docsify pdf clean distclean
+.PHONY: all docker gfm docsify pdf beamer clean distclean
