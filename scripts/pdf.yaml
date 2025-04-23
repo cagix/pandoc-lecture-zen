@@ -26,6 +26,7 @@ variables:
   papersize: a4
   fontsize: 10pt
   colorlinks: true
+  titlepage: true
 #  code-block-font-size: '\footnotesize'
 
 include-in-header:
@@ -34,6 +35,8 @@ include-in-header:
 
 ## options for specific writer
 listings: true
+
+number-sections: true
 
 pdf-engine: pdflatex
 pdf-engine-opt: '-shell-escape'

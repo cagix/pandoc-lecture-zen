@@ -104,7 +104,8 @@ function Pandoc(doc)
 
     -- 1. Title
     if doc.meta.title then
-        blocks:insert(pandoc.Header(1, doc.meta.title))
+        -- insert manually as `pandoc.Header(1, doc.meta.title)` will be shifted like all other headings
+        blocks:insert(pandoc.RawBlock("markdown", '# ' .. pandoc.utils.stringify(doc.meta.title)))
     end
 
     -- 2. TL;DR and Videos
@@ -147,20 +148,14 @@ function Pandoc(doc)
         blocks:insert(pandoc.BlockQuote(quote))
     end
 
-    -- 3. Main Doc (shift headings level if necessary)
-    if doc.meta.shift_headings then
-        doc.blocks = doc.blocks:walk {
-            Header = function(el)
-                el.level = el.level + 1
-                return el
-            end
-        }
-    end
+    -- 3. Main Doc
     blocks:extend(doc.blocks)
 
     -- 4. Literature
     if doc.meta.readings then
-        blocks:insert(pandoc.Header(2, "📖 Zum Nachlesen"))
+        -- insert manually as `pandoc.Header(2, "📖 Zum Nachlesen")` will be shifted like all other headings
+        -- assuming top-level heading: h1, shifting: +1
+        blocks:insert(pandoc.RawBlock("markdown", '## 📖 Zum Nachlesen'))
         blocks:insert(pandoc.BulletList(doc.meta.readings))
     end
 
