@@ -109,12 +109,7 @@ end
 function Pandoc(doc)
     local blocks = pandoc.List()
 
-    -- 1. Title
-    if doc.meta.title then
-        blocks:insert(pandoc.Header(1, doc.meta.title))
-    end
-
-    -- 2. TL;DR and Videos
+    -- 1. TL;DR and Videos
     if doc.meta.tldr or doc.meta.youtube or doc.meta.attachments then
         local quote = pandoc.List()
 
@@ -153,24 +148,17 @@ function Pandoc(doc)
         blocks:insert(pandoc.HorizontalRule())
     end
 
-    -- 3. Main Doc (shift headings level if necessary)
-    if doc.meta.shift_headings then
-        doc.blocks = doc.blocks:walk {
-            Header = function(el)
-                el.level = el.level + 1
-                return el
-            end
-        }
-    end
+    -- 2. Main Doc
     blocks:extend(doc.blocks)
 
-    -- 4. Literature
+    -- 3. Literature
     if doc.meta.readings then
-        blocks:insert(pandoc.Header(2, "Zum Nachlesen"))
+        -- assuming top-level heading: h1, shifting: none
+        blocks:insert(pandoc.Header(1, "Zum Nachlesen"))
         blocks:insert(pandoc.BulletList(doc.meta.readings))
     end
 
-    -- 5. Outcomes, Quizzes, and Challenges
+    -- 4. Outcomes, Quizzes, and Challenges
     if doc.meta.outcomes or doc.meta.quizzes or doc.meta.challenges then
         local quote = pandoc.List()
 
@@ -214,7 +202,7 @@ function Pandoc(doc)
         blocks:extend(quote)
     end
 
-    -- 6. References
+    -- 5. References
     local refs = pandoc.utils.references(doc)
     if refs and #refs > 0 then
         local quote = pandoc.List()
@@ -232,7 +220,7 @@ function Pandoc(doc)
         blocks:extend(quote)
     end
 
-    -- 7. License (and exceptions)
+    -- 6. License (and exceptions)
     if doc.meta.license_footer and (not doc.meta.has_license) then
         blocks:insert(pandoc.RawBlock('latex', '\\newpage'))
         blocks:insert(pandoc.RawBlock('latex', '\\vspace*{\\fill}'))
@@ -249,7 +237,7 @@ function Pandoc(doc)
         end
     end
 
-    -- 8. Last modified
+    -- 7. Last modified
     if doc.meta.lastmod then
         blocks:insert(pandoc.RawBlock('latex', '\\scriptsize'))
         blocks:insert(pandoc.BlockQuote(pandoc.Plain({pandoc.Strong('Last modified:'), pandoc.Str(" "), doc.meta.lastmod})))
