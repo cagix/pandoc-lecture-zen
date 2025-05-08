@@ -18,12 +18,10 @@ function Span(el)
 
     -- Handle "ex" span
     if el.classes[1] == "ex" then
-        if el.attributes["href"] then
-            el.content:insert(" (" .. el.attributes["href"] ..")")
-        end
+        local content = pandoc.utils.stringify(el.content)
         return {
             pandoc.RawInline('latex', '\\ex{'),
-            pandoc.Span(el.content),
+            pandoc.Span((el.attributes["href"] and pandoc.Link(content, el.attributes["href"]) or content)),
             pandoc.RawInline('latex', '}')
         }
     end

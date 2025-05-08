@@ -18,12 +18,10 @@ function Span(el)
     -- In GitHub preview <span ...> would not work properly, using <p ...> instead
     -- Links do not work in <p ...> either ...
     if el.classes[1] == "ex" then
-        if el.attributes["href"] then
-            el.content:insert(" (" .. el.attributes["href"] ..")")
-        end
+        local content = pandoc.utils.stringify(el.content)
         return {
             pandoc.RawInline('markdown', '<p align="right">'),
-            pandoc.Span(el.content),
+            pandoc.RawInline('markdown', (el.attributes["href"] and ('<a href="' .. el.attributes["href"] .. '">' .. content .. '</a>') or content)),
             pandoc.RawInline('markdown', '</p>')
         }
     end
