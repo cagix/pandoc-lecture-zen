@@ -71,6 +71,14 @@ function Div(el)
         -- GitHub preview strips "style" attribute ...
         return pandoc.Div(el.content, {align="center"})
     end
+
+    -- remove columns, but keep content
+    if el.classes[1] == "columns" then
+        return el.content
+    end
+    if el.classes[1] == "column" then
+        return el.content
+    end
 end
 
 
