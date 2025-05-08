@@ -12,10 +12,11 @@ GRPID                  ?= $(shell id -g)
 
 
 ## Pandoc
-## (Defaults to docker. To use pandoc and TeX-Live directly, create an
-## environment variable `PANDOC` pointing to the location of your
-## pandoc installation.)
-PANDOC                 ?= docker run --rm --volume "$(WORKDIR):/data" --workdir /data --user $(USRID):$(GRPID) pandoc/extra:latest-ubuntu
+CONTAINER_MIN           = pandoc/minimal:latest-ubuntu
+CONTAINER_EXT           = pandoc/extra:latest-ubuntu
+
+PANDOC_MIN             ?= docker run --rm --volume "$(WORKDIR):/data" --workdir /data --user $(USRID):$(GRPID) $(CONTAINER_MIN)
+PANDOC_EXT             ?= docker run --rm --volume "$(WORKDIR):/data" --workdir /data --user $(USRID):$(GRPID) $(CONTAINER_EXT)
 
 ## Folder containing the Pandoc-Lecture-Zen project
 PANDOC_DATA            ?= .pandoc
@@ -80,7 +81,7 @@ distclean: clean
 
 
 $(ROOT_DEPS): $(METADATA)
-	$(PANDOC)  -L $(PANDOC_DATA)/scripts/makedeps.lua  -M prefix=$(OUTPUT_DIR)  -f markdown -t markdown  $<  -o $@
+	$(PANDOC_MIN)  -L $(PANDOC_DATA)/scripts/makedeps.lua  -M prefix=$(OUTPUT_DIR)  -f markdown -t markdown  $<  -o $@
 
 ## this needs docker/pandoc, so do only include (and build) when required
 ifeq ($(MAKECMDGOALS), $(filter $(MAKECMDGOALS),gfm docsify pdf beamer))
@@ -119,14 +120,14 @@ beamer: OPTIONS        += -d $(PANDOC_DATA)/scripts/beamer.yaml
 
 $(GFM_MARKDOWN_TARGETS):
 	$(create-folder)
-	$(PANDOC) $(OPTIONS)  -M lastmod="$(shell git log -n 1 --pretty=reference -- $<)"  $<  -o $@
+	$(PANDOC_MIN) $(OPTIONS)  -M lastmod="$(shell git log -n 1 --pretty=reference -- $<)"  $<  -o $@
 
 $(GFM_IMAGE_TARGETS):
 	$(create-dir-and-copy)
 
 $(PDF_MARKDOWN_TARGETS): $$(patsubst $(OUTPUT_DIR)/%.pdf,%.md,$$@)
 	$(create-folder)
-	$(PANDOC) $(OPTIONS)  -M lastmod="$(shell git log -n 1 --pretty=reference -- $<)"  $<  -o $@
+	$(PANDOC_EXT) $(OPTIONS)  -M lastmod="$(shell git log -n 1 --pretty=reference -- $<)"  $<  -o $@
 
 
 ## Canned recipe for creating output folder
