@@ -44,6 +44,8 @@ ROOT_DEPS               = make.deps
 MARKDOWN_SRC           ?=
 GFM_MARKDOWN_TARGETS   ?=
 GFM_IMAGE_TARGETS      ?=
+NO_PDF                 ?=
+NO_BEAMER              ?=
 
 
 
@@ -86,7 +88,9 @@ $(ROOT_DEPS): $(METADATA)
 ## this needs docker/pandoc, so do only include (and build) when required
 ifeq ($(MAKECMDGOALS), $(filter $(MAKECMDGOALS),gfm docsify pdf beamer))
 -include $(ROOT_DEPS)
-PDF_MARKDOWN_TARGETS    = $(patsubst %.md,$(OUTPUT_DIR)/%.pdf,$(MARKDOWN_SRC))
+PDF_BEAMER_TARGETS      = $(patsubst %.md,$(OUTPUT_DIR)/%.pdf,$(MARKDOWN_SRC))
+PDF_TARGETS             = $(patsubst %.md,$(OUTPUT_DIR)/%.pdf,$(filter-out $(NO_PDF),$(MARKDOWN_SRC)))
+BEAMER_TARGETS          = $(patsubst %.md,$(OUTPUT_DIR)/%.pdf,$(filter-out $(NO_BEAMER),$(MARKDOWN_SRC)))
 endif
 
 
@@ -110,11 +114,11 @@ docsify: $(ROOT_DEPS) $$(GFM_MARKDOWN_TARGETS) $$(GFM_IMAGE_TARGETS)
 docsify: OPTIONS       += -d $(PANDOC_DATA)/scripts/docsify.yaml
 
 ## PDF: Process markdown with pandoc and latex
-pdf: $(ROOT_DEPS) $$(PDF_MARKDOWN_TARGETS)
+pdf: $(ROOT_DEPS) $$(PDF_TARGETS)
 pdf: OPTIONS           += -d $(PANDOC_DATA)/scripts/pdf.yaml
 
 ## Beamer: Process markdown with pandoc and latex
-beamer: $(ROOT_DEPS) $$(PDF_MARKDOWN_TARGETS)
+beamer: $(ROOT_DEPS) $$(BEAMER_TARGETS)
 beamer: OPTIONS        += -d $(PANDOC_DATA)/scripts/beamer.yaml
 
 
@@ -125,7 +129,8 @@ $(GFM_MARKDOWN_TARGETS):
 $(GFM_IMAGE_TARGETS):
 	$(create-dir-and-copy)
 
-$(PDF_MARKDOWN_TARGETS): $$(patsubst $(OUTPUT_DIR)/%.pdf,%.md,$$@)
+## will cover PDF_TARGETS as well as BEAMER_TARGETS
+$(PDF_BEAMER_TARGETS): $$(patsubst $(OUTPUT_DIR)/%.pdf,%.md,$$@)
 	$(create-folder)
 	$(PANDOC_EXT) $(OPTIONS)  -M lastmod="$(shell git log -n 1 --pretty=reference -- $<)"  $<  -o $@
 

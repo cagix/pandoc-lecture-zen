@@ -76,6 +76,11 @@ $(GFM_IMAGE_TARGETS):
 	cp $< $@
 ```
 
+To allow for easier filtering in our Makefile, this filter will also add all
+Markdown sources to a Makefile variable `MARKDOWN_SRC`.
+If a processed file has a metadata variable `no_pdf: true` or `no_beamer: true`,
+the file will be added to the Makefile variables `NO_PDF` and `NO_BEAMER`, resp.
+
 
 Usage: This filter is intended to be used with individual files that are placed
 either directly in the working directory or in a subdirectory.
@@ -98,6 +103,9 @@ local link_img = {}             -- dependencies for *.md: all referenced images 
 
 local link = {}                 -- list of collected links (new_target) to ensure deterministic order in generated list (for testing)
 local links = {}                -- set of collected links (old_target:new_target) to avoid processing the same file/link several times
+
+local no_pdf = {}               -- set of collected links (old_target) with metadata `no_pdf: true`
+local no_beamer = {}            -- set of collected links (old_target) with metadata `no_beamer: true`
 
 local frontier = {}             -- queue to implement breadth-first search for visiting links
 local frontier_first = 0        -- first element in queue
@@ -217,6 +225,8 @@ local function _filter_blocks_in_dir (doc, target)
 
                 -- remember this file (path w/o '../')
                 _remember_file(old_target, new_target)
+                if doc.meta.no_pdf then no_pdf[old_target] = true end
+                if doc.meta.no_beamer then no_beamer[old_target] = true end
 
                 -- collect and enqueue all new images and links in current file 'include_path/target'
                 doc.blocks:walk({
@@ -273,6 +283,8 @@ local function _emit_links ()
         end
         inlines:insert(pandoc.RawInline("markdown", "GFM_MARKDOWN_TARGETS += " .. new_target .. "\n"))
         inlines:insert(pandoc.RawInline("markdown", "MARKDOWN_SRC += " .. old_target .. "\n\n"))
+        if no_pdf[old_target] then inlines:insert(pandoc.RawInline("markdown", "NO_PDF += " .. old_target .. "\n\n")) end
+        if no_beamer[old_target] then inlines:insert(pandoc.RawInline("markdown", "NO_BEAMER += " .. old_target .. "\n\n")) end
     end
     return inlines
 end
