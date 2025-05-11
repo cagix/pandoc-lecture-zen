@@ -200,7 +200,7 @@ local function _remember_image (image_src, old_target, new_target)
 end
 
 -- process all blocks in context of target's directory
-local function _filter_blocks_in_dir (blocks, target)
+local function _filter_blocks_in_dir (doc, target)
     -- change into directory of 'target' to resolve potential '../' in path
     pandoc.system.with_working_directory(
             pandoc.path.directory(target),    -- may still contain '../'
@@ -219,7 +219,7 @@ local function _filter_blocks_in_dir (blocks, target)
                 _remember_file(old_target, new_target)
 
                 -- collect and enqueue all new images and links in current file 'include_path/target'
-                blocks:walk({
+                doc.blocks:walk({
                     Image = function (image)
                         if _is_local_path(image.src) then
                             _remember_image(image.src, old_target, new_target)
@@ -242,10 +242,10 @@ function _handle_file (target)
     if not fh then
         io.stderr:write("\t (_handle_file) WARNING: cannot open file '" .. target .. "' ... skipping ... \n")
     else
-        local blocks = pandoc.read(fh:read "*all", "markdown", PANDOC_READER_OPTIONS).blocks
-        fh:close()
+        local doc = pandoc.read(fh:read "*all", "markdown", PANDOC_READER_OPTIONS)
+        fh:close()  -- close before entering the recursive step, i.e. do not accumulate open file handles
 
-        _filter_blocks_in_dir(blocks, target)
+        _filter_blocks_in_dir(doc, target)
     end
 end
 
