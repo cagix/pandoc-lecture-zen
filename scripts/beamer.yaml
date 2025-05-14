@@ -12,21 +12,19 @@ filters:
   - ${.}/slides.lua
   - ${.}/beamer.lua
 
-metadata:
-  link-citations: false
-  suppress-bibliography: true
-
 
 ## writer options
 strip-comments: true
 
-variables:
+metadata:
   aspectratio: 1610
   fontsize: smaller
   theme: metropolis
   themeoptions:
     - numbering=none
     - progressbar=foot
+  link-citations: false
+  suppress-bibliography: true
 
 include-in-header:
   - ${.}/beamer.tex
