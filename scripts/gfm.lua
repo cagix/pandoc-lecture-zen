@@ -154,7 +154,9 @@ function Pandoc(doc)
         -- insert manually as `pandoc.Header(2, "📖 Zum Nachlesen")` will be shifted like all other headings
         -- assuming top-level heading: h1, shifting: +1
         blocks:insert(pandoc.RawBlock("markdown", '## 📖 Zum Nachlesen'))
-        blocks:insert(pandoc.BulletList(doc.meta.readings))
+        blocks:insert(pandoc.BulletList(
+            doc.meta.readings:map(function(e) return pandoc.Span(e) end)
+        ))
     end
 
     -- 5. Outcomes, Quizzes, and Challenges

@@ -153,7 +153,9 @@ function Pandoc(doc)
     if doc.meta.readings then
         -- assuming top-level heading: h1, shifting: none
         blocks:insert(pandoc.Header(1, "Zum Nachlesen"))
-        blocks:insert(pandoc.BulletList(doc.meta.readings))
+        blocks:insert(pandoc.BulletList(
+            doc.meta.readings:map(function(e) return pandoc.Span(e) end)
+        ))
     end
 
     -- 4. Outcomes, Quizzes, and Challenges
