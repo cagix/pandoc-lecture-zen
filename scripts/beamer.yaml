@@ -16,12 +16,11 @@ filters:
 ## writer options
 strip-comments: true
 
-metadata:
+metadata:   ## must be "metadata" for the beamer.lua filter to be able to change the settings
   aspectratio: 1610
   fontsize: smaller
   theme: metropolis
   themeoptions:
-    - numbering=none
     - progressbar=foot
   link-citations: false
   suppress-bibliography: true

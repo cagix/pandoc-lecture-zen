@@ -182,15 +182,10 @@ function Pandoc(doc)
         blocks:insert(pandoc.RawBlock('latex', '\\normalsize'))
     end
 
-    -- 4. Activate special numbering iff `numbering: true` is present in documents YAML header
-    -- this is hacky: for this to work the beamer settings in beamer.yaml need to be "metadata" instead of "variables"
-    if doc.meta.numbering then
-        if doc.meta.themeoptions then
-            doc.meta.themeoptions[#doc.meta.themeoptions+1] = "numbering=fraction"
-        else
-            doc.meta.themeoptions = {"numbering=fraction"}
-        end
-    end
+    -- 4. Change numbering style to eg. `slide_numbering: fraction` if present in documents YAML header (default: "none")
+    -- this is hacky: for this to work all beamer settings in beamer.yaml need to be "metadata" instead of "variables"
+    local slide_numbering = { "numbering=" .. (doc.meta.slide_numbering and pandoc.utils.stringify(doc.meta.slide_numbering) or "none") }
+    doc.meta.themeoptions = doc.meta.themeoptions and (doc.meta.themeoptions .. slide_numbering) or slide_numbering
 
 
     -- finé
