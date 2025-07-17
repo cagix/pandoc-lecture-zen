@@ -9,8 +9,7 @@ function Span(el)
         credits[pandoc.utils.stringify(el.content)] = el.content
 
         -- add "Quelle: " in front of content
-        el.content = { pandoc.Str("Quelle: ") } .. el.content
-        return el
+        return { pandoc.Str("Quelle: ") } .. el.content
     end
 
     -- Handle "ex" span
