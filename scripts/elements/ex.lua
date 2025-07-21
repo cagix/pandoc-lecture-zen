@@ -13,7 +13,8 @@ if (FORMAT:match 'latex') or (FORMAT:match 'beamer') then
     end
 end
 
-if FORMAT:match ('gfm') or (FORMAT:match 'markdown') then
+
+if (FORMAT:match 'gfm') or (FORMAT:match 'markdown') then
     function Span(el)
         -- Use key/value pair "href=..." in span as href parameter in shortcode
         -- In GitHub preview <span ...> would not work properly, using <p ...> instead
