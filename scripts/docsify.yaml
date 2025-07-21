@@ -10,7 +10,7 @@ to: markdown-bracketed_spans-fenced_divs-simple_tables-multiline_tables-grid_tab
 filters:
   - ${.}/deprecated.lua
   - ${.}/handout.lua
-  - ${.}/docsify.lua
+  - ${.}/markdown.lua
   - ${.}/origin.lua
   - ${.}/ex.lua
   - ${.}/image.lua

@@ -1,20 +1,24 @@
+-- "Template" for GFM and Docsify
+
 function Div(el)
     -- remove columns, but keep content
     if el.classes[1] == "columns" then
+        io.stderr:write("\t[WARNING] columns are not really supported in docsify/gfm\n")
         return el.content
     end
     if el.classes[1] == "column" then
+        io.stderr:write("\t[WARNING] columns are not really supported in docsify/gfm\n")
         return el.content
     end
 end
 
 
 function DefinitionList(el)
-    io.stderr:write("\t[WARNING] definition lists not really supported in docsify\n")
+    io.stderr:write("\t[WARNING] definition lists are not really supported in docsify/gfm\n")
 end
 
 
--- Remove TeX commands
+-- Remove TeX commands - won't be automatically removed for markdown target format
 function RawInline(el)
     if el.format == "tex" or el.format == "latex" then
         return {}
@@ -28,18 +32,20 @@ function RawBlock(el)
 end
 
 
--- Handle table captions
-function Table(el)
-    local cap = el.caption.short or el.caption.long or {}
-    if #cap > 0 then
-        -- reset original caption
-        el.caption.short = {}
-        el.caption.long = {}
-        -- put caption as paragraph after table
-        return {
-            el,
-            pandoc.Para(pandoc.utils.stringify(cap))
-        }
+if FORMAT:match 'markdown' then
+    -- Handle table captions for Docsify
+    function Table(el)
+        local cap = el.caption.short or el.caption.long or {}
+        if #cap > 0 then
+            -- reset original caption
+            el.caption.short = {}
+            el.caption.long = {}
+            -- put caption as paragraph after table
+            return {
+                el,
+                pandoc.Para(pandoc.utils.stringify(cap))
+            }
+        end
     end
 end
 
@@ -48,15 +54,17 @@ end
 function Pandoc(doc)
     local blocks = pandoc.List()
 
-    -- 1. Title
+    -- Title
     if doc.meta.title then
         -- insert manually as `pandoc.Header(1, doc.meta.title)` will be shifted like all other headings
         blocks:insert(pandoc.RawBlock("markdown", '# ' .. pandoc.utils.stringify(doc.meta.title)))
     end
 
-    -- 2. TL;DR and Videos
+    -- TL;DR and Videos
     if doc.meta.tldr or doc.meta.youtube or doc.meta.attachments then
         local quote = pandoc.List()
+
+        quote:insert(pandoc.RawBlock("markdown", '[!NOTE]'))
 
         if doc.meta.tldr then
             quote:insert(pandoc.RawBlock("markdown", '<details open>'))
@@ -92,10 +100,10 @@ function Pandoc(doc)
         blocks:insert(pandoc.BlockQuote(quote))
     end
 
-    -- 3. Main Doc
+    -- Main Doc
     blocks:extend(doc.blocks)
 
-    -- 4. Literature
+    -- Literature
     if doc.meta.readings then
         -- insert manually as `pandoc.Header(2, "📖 Zum Nachlesen")` will be shifted like all other headings
         -- assuming top-level heading: h1, shifting: +1
@@ -105,7 +113,7 @@ function Pandoc(doc)
         ))
     end
 
-    -- 5. Outcomes, Quizzes, and Challenges
+    -- Outcomes, Quizzes, and Challenges
     if doc.meta.outcomes or doc.meta.quizzes or doc.meta.challenges then
         local quote = pandoc.List()
 
@@ -147,7 +155,7 @@ function Pandoc(doc)
         blocks:insert(pandoc.BlockQuote(quote))
     end
 
-    -- 6. References
+    -- References
     local refs = pandoc.utils.references(doc)
     if refs and #refs > 0 then
         local quote = pandoc.List()
@@ -162,14 +170,14 @@ function Pandoc(doc)
         blocks:insert(pandoc.BlockQuote(quote))
     end
 
-    -- 7. License (and exceptions)
+    -- License (and exceptions)
     if doc.meta.license_footer and (not doc.meta.has_license) then
         blocks:insert(pandoc.HorizontalRule())
         blocks:extend(doc.meta.license_footer)
         blocks:insert(pandoc.Div('EXCEPTIONS', {class = 'exceptions'}))  -- marker for origin-filter
     end
 
-    -- 8. Last modified
+    -- Last modified
     if doc.meta.lastmod then
         blocks:insert(pandoc.Plain({
             pandoc.RawInline('markdown', '<blockquote><p><sup><sub><strong>Last modified:</strong> '),
@@ -179,6 +187,6 @@ function Pandoc(doc)
     end
 
 
-    -- finé
+    -- Finé
     return pandoc.Pandoc(blocks, doc.meta)
 end

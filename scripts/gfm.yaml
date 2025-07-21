@@ -10,7 +10,7 @@ to: gfm
 filters:
   - ${.}/deprecated.lua
   - ${.}/handout.lua
-  - ${.}/gfm.lua
+  - ${.}/markdown.lua
   - ${.}/origin.lua
   - ${.}/ex.lua
   - ${.}/image.lua
