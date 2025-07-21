@@ -11,6 +11,7 @@ filters:
   - ${.}/deprecated.lua
   - ${.}/handout.lua
   - ${.}/gfm.lua
+  - ${.}/origin.lua
 
 metadata:
   link-citations: true

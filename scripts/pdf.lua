@@ -1,22 +1,5 @@
--- Collect all 'origin' spans - this is foreign material, i.e. should be listed as exceptions to our licence
-credits = {}
-
+-- Handle "ex" span
 function Span(el)
-    -- Collect all 'origin' spans - this is foreign material, i.e. should be listed as exceptions to our licence
-    if el.classes[1] == "origin" then
-        -- use map to avoid duplicates
-        -- (when used in images, this would end up in alt text _and_ in caption)
-        credits[pandoc.utils.stringify(el.content)] = el.content
-
-        -- add "Quelle: " in front of content
-        return {
-            pandoc.RawInline('latex', '\\origin{Quelle: '),
-            pandoc.Span(el.content),
-            pandoc.RawInline('latex', '}')
-        }
-    end
-
-    -- Handle "ex" span
     if el.classes[1] == "ex" then
         local content = pandoc.utils.stringify(el.content)
         return {
@@ -226,15 +209,7 @@ function Pandoc(doc)
         blocks:insert(pandoc.RawBlock('latex', '\\vspace*{\\fill}'))
         blocks:insert(pandoc.HorizontalRule())
         blocks:extend(doc.meta.license_footer)
-
-        local bullets = pandoc.List()
-        for _, v in pairs(credits) do
-            bullets:insert(pandoc.Plain(v))
-        end
-        if #bullets > 0 then
-            blocks:insert(pandoc.Strong('Exceptions:'))
-            blocks:insert(pandoc.BulletList(bullets))
-        end
+        blocks:insert(pandoc.Div('EXCEPTIONS', {class = 'exceptions'}))  -- marker for origin-filter
     end
 
     -- 7. Last modified

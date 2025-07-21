@@ -1,18 +1,5 @@
--- Collect all 'origin' spans - this is foreign material, i.e. should be listed as exceptions to our licence
-credits = {}
-
+-- Handle "ex" span
 function Span(el)
-    -- Collect all 'origin' spans - this is foreign material, i.e. should be listed as exceptions to our licence
-    if el.classes[1] == "origin" then
-        -- use map to avoid duplicates
-        -- (when used in images, this would end up in alt text _and_ in caption)
-        credits[pandoc.utils.stringify(el.content)] = el.content
-
-        -- add "Quelle: " in front of content
-        return { pandoc.Str("Quelle: ") } .. el.content
-    end
-
-    -- Handle "ex" span
     -- Use key/value pair "href=..." in span as href parameter in shortcode
     -- In GitHub preview <span ...> would not work properly, using <p ...> instead
     -- Links do not work in <p ...> either ...
@@ -219,15 +206,7 @@ function Pandoc(doc)
     if doc.meta.license_footer and (not doc.meta.has_license) then
         blocks:insert(pandoc.HorizontalRule())
         blocks:extend(doc.meta.license_footer)
-
-        local bullets = pandoc.List()
-        for _, v in pairs(credits) do
-            bullets:insert(pandoc.Plain(v))
-        end
-        if #bullets > 0 then
-            blocks:insert(pandoc.Strong('Exceptions:'))
-            blocks:insert(pandoc.BulletList(bullets))
-        end
+        blocks:insert(pandoc.Div('EXCEPTIONS', {class = 'exceptions'}))  -- marker for origin-filter
     end
 
     -- 8. Last modified
