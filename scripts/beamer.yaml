@@ -10,7 +10,7 @@ to: beamer
 filters:
   - ${.}/deprecated.lua
   - ${.}/slides.lua
-  - ${.}/beamer.lua
+  - ${.}/latex.lua
   - ${.}/origin.lua
   - ${.}/ex.lua
   - ${.}/math.lua

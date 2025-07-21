@@ -10,7 +10,7 @@ to: pdf
 filters:
   - ${.}/deprecated.lua
   - ${.}/handout.lua
-  - ${.}/pdf.lua
+  - ${.}/latex.lua
   - ${.}/origin.lua
   - ${.}/ex.lua
   - ${.}/math.lua
