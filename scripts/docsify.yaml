@@ -17,6 +17,7 @@ filters:
   - ${.}/center.lua
   - ${.}/details.lua
   - ${.}/ghalerts.lua
+  - ${.}/code.lua
 
 metadata:
   link-citations: true

@@ -43,18 +43,6 @@ function Table(el)
     end
 end
 
--- Handle code block captions
-function CodeBlock(el)
-    if el.attributes and el.attributes["caption"] then
-        -- remove all attributes from code (just keep the class)
-        -- put caption as paragraph after code block
-        return {
-            pandoc.CodeBlock(el.text, {class = pandoc.utils.stringify(el.classes)}),
-            pandoc.Para(el.attributes["caption"])
-        }
-    end
-end
-
 
 --- Structure of the document (should be done w/ template, but quotes won't work)
 function Pandoc(doc)
