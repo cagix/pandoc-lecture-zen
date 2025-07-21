@@ -12,6 +12,7 @@ filters:
   - ${.}/slides.lua
   - ${.}/beamer.lua
   - ${.}/origin.lua
+  - ${.}/ex.lua
 
 
 ## writer options

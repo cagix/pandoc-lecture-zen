@@ -12,6 +12,7 @@ filters:
   - ${.}/handout.lua
   - ${.}/docsify.lua
   - ${.}/origin.lua
+  - ${.}/ex.lua
 
 metadata:
   link-citations: true

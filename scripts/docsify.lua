@@ -1,19 +1,3 @@
--- Handle "ex" span
-function Span(el)
-    -- Use key/value pair "href=..." in span as href parameter in shortcode
-    -- In GitHub preview <span ...> would not work properly, using <p ...> instead
-    -- Links do not work in <p ...> either ...
-    if el.classes[1] == "ex" then
-        local content = pandoc.utils.stringify(el.content)
-        return {
-            pandoc.RawInline('markdown', '<p align="right">'),
-            pandoc.RawInline('markdown', (el.attributes["href"] and ('<a href="' .. el.attributes["href"] .. '">' .. content .. '</a>') or content)),
-            pandoc.RawInline('markdown', '</p>')
-        }
-    end
-end
-
-
 function Div(el)
     -- GitHub Alerts: replace alert Divs with "real" GH alerts
     if el.classes[1] == "note" then
