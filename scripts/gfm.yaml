@@ -14,6 +14,7 @@ filters:
   - ${.}/origin.lua
   - ${.}/ex.lua
   - ${.}/image.lua
+  - ${.}/center.lua
 
 metadata:
   link-citations: true

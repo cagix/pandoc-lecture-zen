@@ -15,6 +15,7 @@ filters:
   - ${.}/ex.lua
   - ${.}/math.lua
   - ${.}/image.lua
+  - ${.}/center.lua
 
 
 ## writer options

@@ -79,15 +79,6 @@ function Div(el)
 
         return bl
     end
-
-    -- Replace "center" Div with centered <p>
-    if el.classes[1] == "center" then
-        return {
-            pandoc.RawBlock('latex', '\\begin{center}'),
-            pandoc.Div(el.content),
-            pandoc.RawBlock('latex', '\\end{center}')
-        }
-    end
 end
 
 
