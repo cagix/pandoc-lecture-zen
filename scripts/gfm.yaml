@@ -13,6 +13,7 @@ filters:
   - ${.}/gfm.lua
   - ${.}/origin.lua
   - ${.}/ex.lua
+  - ${.}/image.lua
 
 metadata:
   link-citations: true

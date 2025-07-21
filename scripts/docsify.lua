@@ -97,43 +97,6 @@ function CodeBlock(el)
 end
 
 
--- Handle image scaling
--- If "width" or "web_width" parameters are present, wrap image in raw `<div style="width: ...;"> ... </div>`.
--- If both "width" and "web_width" parameters are present, "web_width" takes precedence
--- Caveat: We now also need to handle ‘figures’ ourselves - thus deactivating the `implicit_figures` option!
-function Image(el)
-    local width = el.attributes["web_width"]  or  el.attributes["width"]  or  ""
-    local caption = pandoc.utils.stringify(el.caption)
-
-    if caption == "" then
-        -- Empty caption ("image")
-        -- Markdown image needs to be separated with blank lines from context for Docsify to recognise
-        local w = width == "" and "" or (' style="width:' .. width .. ';"')
-        return {
-            pandoc.RawInline('markdown', '<div' .. w .. '>'),
-            pandoc.Str('\n\n'),
-            pandoc.RawInline('markdown', '![](' .. el.src ..')'),
-            pandoc.Str('\n\n'),
-            pandoc.RawInline('markdown', '</div>')
-        }
-    else
-        -- Non-empty caption ("figure")
-        -- Markdown image needs to be separated with blank lines from context for Docsify to recognise
-        local w = width == "" and "" or (' style="width:' .. width .. '; margin: 0 auto;"')
-        return {
-            pandoc.RawInline('markdown', '<div style="text-align: center;">'),
-            pandoc.RawInline('markdown', '<div' .. w .. '>'),
-            pandoc.Str('\n\n'),
-            pandoc.RawInline('markdown', '![](' .. el.src ..')'),
-            pandoc.Str('\n\n'),
-            pandoc.RawInline('markdown', '</div><p>'),
-            pandoc.Span(caption),
-            pandoc.RawInline('markdown', '</p></div>'),
-        }
-    end
-end
-
-
 --- Structure of the document (should be done w/ template, but quotes won't work)
 function Pandoc(doc)
     local blocks = pandoc.List()
