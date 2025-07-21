@@ -1,6 +1,7 @@
 -- "Template" for Beamer and PDF
 
 -- do not remove "`el`{=markdown}", convert it to raw "LaTeX" instead
+-- TODO: why did we introduce this filter?
 function RawInline(el)
     if el.format:match 'markdown' then
         io.stderr:write("\t[WARNING] latex: '" .. el.text .. "'\n")
