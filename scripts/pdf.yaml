@@ -13,6 +13,7 @@ filters:
   - ${.}/pdf.lua
   - ${.}/origin.lua
   - ${.}/ex.lua
+  - ${.}/math.lua
 
 metadata:
   link-citations: true
