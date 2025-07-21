@@ -1,25 +1,4 @@
 function Div(el)
-    -- GitHub Alerts: replace alert Divs with "real" GH alerts
-    if el.classes[1] == "note" then
-        return pandoc.BlockQuote({pandoc.RawBlock("markdown", '[!NOTE]')} .. el.content)
-    end
-    if el.classes[1] == "tip" then
-        return pandoc.BlockQuote({pandoc.RawBlock("markdown", '[!TIP]')} .. el.content)
-    end
-    if el.classes[1] == "important" then
-        -- "important" not supported in docsify
-        io.stderr:write("\t[WARNING] GitHub alert 'important' not supported in docsify (replacing w/ quote)\n")
-        return pandoc.BlockQuote(el.content)
-    end
-    if el.classes[1] == "warning" then
-        return pandoc.BlockQuote({pandoc.RawBlock("markdown", '[!WARNING]')} .. el.content)
-    end
-    if el.classes[1] == "caution" then
-        -- "caution" not supported in docsify
-        io.stderr:write("\t[WARNING] GitHub alert 'caution' not supported in docsify (replacing w/ quote)\n")
-        return pandoc.BlockQuote(el.content)
-    end
-
     -- remove columns, but keep content
     if el.classes[1] == "columns" then
         return el.content

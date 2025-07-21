@@ -17,6 +17,7 @@ filters:
   - ${.}/image.lua
   - ${.}/center.lua
   - ${.}/details.lua
+  - ${.}/ghalerts.lua
 
 
 ## writer options

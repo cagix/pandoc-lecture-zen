@@ -1,23 +1,3 @@
-function Div(el)
-    -- GitHub Alerts: replace alert Divs with "real" GH alerts
-    if el.classes[1] == "note" then
-        return pandoc.BlockQuote({pandoc.RawBlock("markdown", '[!NOTE]')} .. el.content)
-    end
-    if el.classes[1] == "tip" then
-        return pandoc.BlockQuote({pandoc.RawBlock("markdown", '[!TIP]')} .. el.content)
-    end
-    if el.classes[1] == "important" then
-        return pandoc.BlockQuote({pandoc.RawBlock("markdown", '[!IMPORTANT]')} .. el.content)
-    end
-    if el.classes[1] == "warning" then
-        return pandoc.BlockQuote({pandoc.RawBlock("markdown", '[!WARNING]')} .. el.content)
-    end
-    if el.classes[1] == "caution" then
-        return pandoc.BlockQuote({pandoc.RawBlock("markdown", '[!CAUTION]')} .. el.content)
-    end
-end
-
-
 --- Structure of the document (should be done w/ template, but quotes won't work)
 function Pandoc(doc)
     local blocks = pandoc.List()
