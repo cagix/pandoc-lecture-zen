@@ -8,17 +8,17 @@ to: beamer
 
 ## reader options
 filters:
-  - ${.}/deprecated.lua
-  - ${.}/slides.lua
-  - ${.}/latex.lua
-  - ${.}/origin.lua
-  - ${.}/ex.lua
-  - ${.}/math.lua
-  - ${.}/image.lua
-  - ${.}/center.lua
-  - ${.}/details.lua
-  - ${.}/ghalerts.lua
-  - ${.}/code.lua
+  - ${.}/elements/deprecated.lua
+  - ${.}/document/slides.lua
+  - ${.}/document/latex.lua
+  - ${.}/elements/origin.lua
+  - ${.}/elements/ex.lua
+  - ${.}/elements/math.lua
+  - ${.}/elements/image.lua
+  - ${.}/elements/center.lua
+  - ${.}/elements/details.lua
+  - ${.}/elements/ghalerts.lua
+  - ${.}/elements/code.lua
 
 
 ## writer options

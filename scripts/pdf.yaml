@@ -8,15 +8,15 @@ to: pdf
 
 ## reader options
 filters:
-  - ${.}/deprecated.lua
-  - ${.}/handout.lua
-  - ${.}/latex.lua
-  - ${.}/origin.lua
-  - ${.}/ex.lua
-  - ${.}/math.lua
-  - ${.}/center.lua
-  - ${.}/details.lua
-  - ${.}/ghalerts.lua
+  - ${.}/elements/deprecated.lua
+  - ${.}/document/handout.lua
+  - ${.}/document/latex.lua
+  - ${.}/elements/origin.lua
+  - ${.}/elements/ex.lua
+  - ${.}/elements/math.lua
+  - ${.}/elements/center.lua
+  - ${.}/elements/details.lua
+  - ${.}/elements/ghalerts.lua
 
 metadata:
   link-citations: true
