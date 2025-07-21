@@ -15,20 +15,6 @@ function Div(el)
     if el.classes[1] == "caution" then
         return pandoc.BlockQuote({pandoc.RawBlock("markdown", '[!CAUTION]')} .. el.content)
     end
-
-    -- Replace "details" Div with <details>
-    if el.classes[1] == "details" then
-        local bl = pandoc.List()
-
-        bl:insert(pandoc.RawBlock("markdown", '<details>'))
-        if el.attributes["title"] then
-            bl:insert(pandoc.RawBlock("markdown", '<summary><strong>' .. el.attributes["title"] .. '</strong></summary>'))
-        end
-        bl:extend(el.content)
-        bl:insert(pandoc.RawBlock("markdown", '</details>'))
-
-        return bl
-    end
 end
 
 

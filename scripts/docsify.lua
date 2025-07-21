@@ -20,20 +20,6 @@ function Div(el)
         return pandoc.BlockQuote(el.content)
     end
 
-    -- Replace "details" Div with <details>
-    if el.classes[1] == "details" then
-        local bl = pandoc.List()
-
-        bl:insert(pandoc.RawBlock("markdown", '<details>'))
-        if el.attributes["title"] then
-            bl:insert(pandoc.RawBlock("markdown", '<summary><strong>' .. el.attributes["title"] .. '</strong></summary>'))
-        end
-        bl:extend(el.content)
-        bl:insert(pandoc.RawBlock("markdown", '</details>'))
-
-        return bl
-    end
-
     -- remove columns, but keep content
     if el.classes[1] == "columns" then
         return el.content

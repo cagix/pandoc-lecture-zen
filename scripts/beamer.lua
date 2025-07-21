@@ -67,18 +67,6 @@ function Div(el)
             pandoc.RawBlock('latex', '\\end{error-box}')
         }
     end
-
-    -- Replace "details" Div with <details>
-    if el.classes[1] == "details" then
-        local bl = pandoc.List()
-
-        if el.attributes["title"] then
-            bl:insert(pandoc.Plain(pandoc.Strong(el.attributes["title"])))
-        end
-        bl:extend(el.content)
-
-        return bl
-    end
 end
 
 
