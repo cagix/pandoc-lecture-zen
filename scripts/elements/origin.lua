@@ -36,11 +36,20 @@ function Div(el)
 
         if #bullets > 0 then
             -- we do have some exceptions
-            return {
-                pandoc.RawBlock('latex', '\\bigskip'),
-                pandoc.Plain(pandoc.Strong('Exceptions:')),
-                pandoc.BulletList(bullets)
-            }
+            if (FORMAT:match 'latex') or (FORMAT:match 'beamer') then
+                return {
+                    pandoc.RawBlock('latex', '\\bigskip'),
+                    pandoc.Plain(pandoc.Strong('Exceptions:')),
+                    pandoc.BulletList(bullets)
+                }
+            end
+            if FORMAT:match ('gfm') or (FORMAT:match 'markdown') then
+                return {
+                    pandoc.Plain(pandoc.Strong('Exceptions:')),
+                    pandoc.BulletList(bullets)
+                }
+            end
+            io.stderr:write("\t (origin) unexpected format: '" .. FORMAT .. "' ... \n")
         else
             -- nope, nothing ...
             return {}  -- remove marker anyway
