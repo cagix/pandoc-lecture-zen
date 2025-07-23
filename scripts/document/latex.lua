@@ -1,15 +1,5 @@
 -- "Template" for Beamer and PDF
 
--- do not remove "`el`{=markdown}", convert it to raw "LaTeX" instead
--- TODO: why did we introduce this filter?
-function RawInline(el)
-    if el.format:match 'markdown' then
-        io.stderr:write("\t[WARNING] latex: '" .. el.text .. "'\n")
-        return pandoc.RawInline('latex', el.text)
-    end
-end
-
-
 --- Structure of the document (should be done w/ template, but quotes won't work)
 function Pandoc(doc)
     local blocks = pandoc.List()
