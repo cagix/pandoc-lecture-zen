@@ -250,7 +250,7 @@ end
 function _handle_file (target)
     local fh = io.open(target, "r")
     if not fh then
-        io.stderr:write("\t (_handle_file) WARNING: cannot open file '" .. target .. "' ... skipping ... \n")
+        io.stderr:write("\t[WARNING]  [makedeps::_handle_file]  cannot open file: '" .. target .. "' ... skipping ... \n")
     else
         local doc = pandoc.read(fh:read "*all", "markdown", PANDOC_READER_OPTIONS)
         fh:close()  -- close before entering the recursive step, i.e. do not accumulate open file handles

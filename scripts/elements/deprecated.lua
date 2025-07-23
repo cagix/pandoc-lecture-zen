@@ -2,7 +2,7 @@
 -- Issue a warning if users use elements that are no longer supported (spans, divs, classes, ...)
 
 local function warning(w)
-    io.stderr:write("\t" .. "[WARNING] " .. w .. "\n")
+    io.stderr:write("\t[WARNING]  [deprecated.lua]  " .. w .. "\n")
 end
 
 

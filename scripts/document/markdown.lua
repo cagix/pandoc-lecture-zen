@@ -3,18 +3,18 @@
 function Div(el)
     -- remove columns, but keep content
     if el.classes[1] == "columns" then
-        io.stderr:write("\t[WARNING] columns are not really supported in docsify/gfm\n")
+        io.stderr:write("\t[WARNING]  [markdown.lua]  columns are not really supported in docsify/gfm\n")
         return el.content
     end
     if el.classes[1] == "column" then
-        io.stderr:write("\t[WARNING] columns are not really supported in docsify/gfm\n")
+        io.stderr:write("\t[WARNING]  [markdown.lua]  columns are not really supported in docsify/gfm\n")
         return el.content
     end
 end
 
 
 function DefinitionList(el)
-    io.stderr:write("\t[WARNING] definition lists are not really supported in docsify/gfm\n")
+    io.stderr:write("\t[WARNING]  [markdown.lua]  definition lists are not really supported in docsify/gfm\n")
 end
 
 
