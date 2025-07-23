@@ -62,7 +62,7 @@ if (FORMAT:match 'gfm') or (FORMAT:match 'markdown') then
         if el.classes[1] == "important" then
             if FORMAT:match 'markdown' then
                 -- docsify: "important" not supported in docsify
-                io.stderr:write("\t[WARNING]  [ghalerts.lua]  GitHub alert 'important' not supported in docsify (replacing w/ quote)\n")
+                io.stderr:write("[WARNING]  [ghalerts.lua]  GitHub alert 'important' not supported in docsify (replacing w/ quote)\n")
                 return pandoc.BlockQuote(el.content)
             else
                 -- gfm
@@ -73,7 +73,7 @@ if (FORMAT:match 'gfm') or (FORMAT:match 'markdown') then
         if el.classes[1] == "caution" then
             if FORMAT:match 'markdown' then
                 -- docsify: "caution" not supported in docsify
-                io.stderr:write("\t[WARNING]  [ghalerts.lua]  GitHub alert 'caution' not supported in docsify (replacing w/ quote)\n")
+                io.stderr:write("[WARNING]  [ghalerts.lua]  GitHub alert 'caution' not supported in docsify (replacing w/ quote)\n")
                 return pandoc.BlockQuote(el.content)
             else
                 -- gfm
