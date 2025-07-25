@@ -28,6 +28,16 @@ if FORMAT:match 'beamer' then
 end
 
 
+if FORMAT:match 'latex' then
+    -- remove any extra attribute "size" when generating pdf's
+    -- Eisvogel has it's own settings, don't mess with it
+    function CodeBlock(el)
+        el.attributes.size = nil
+        return el
+    end
+end
+
+
 if FORMAT:match 'markdown' then
     -- Handle code block captions
     function CodeBlock(el)
