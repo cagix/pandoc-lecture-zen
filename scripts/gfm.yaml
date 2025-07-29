@@ -17,6 +17,7 @@ filters:
   - ${.}/elements/center.lua
   - ${.}/elements/details.lua
   - ${.}/elements/ghalerts.lua
+  - ${.}/elements/bulletlist_displaymath.lua
 
 metadata:
   link-citations: true
