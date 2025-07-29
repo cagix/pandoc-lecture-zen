@@ -67,3 +67,54 @@ function BulletList(el)
     -- replace original BulletPoint with list of blocks
     return result
 end
+
+
+function OrderedList(el)
+    -- resulting list of blocks
+    local result = pandoc.List()
+
+    -- temporary current orderedlist
+    local curr_orderedlist = pandoc.List()
+
+    -- fetch all bullet points (list of blocks)
+    for _, listitem in pairs(el.content) do
+        local displaymath = pandoc.List()
+
+        -- create bullet point and add to curr_orderedlist
+        curr_orderedlist:insert(listitem:walk {
+            Math = function(el)
+                if el.mathtype == "DisplayMath" then
+                    displaymath:insert(pandoc.Para(el))  -- save math for later insertion
+                    return {}                            -- remove from bullet point
+                end
+            end,
+            Para = function(el)
+                if #el.content == 0 then
+                    return {}  -- remove empty paras in bullet points
+                end
+            end
+        })
+
+        -- if we've found some math elements move 'em outside the bullet list
+        -- hacky workaround to resolve this weird GitHub bug
+        if #displaymath > 0 then
+            -- close current orderedlist
+            result:insert(pandoc.OrderedList(curr_orderedlist))
+            curr_orderedlist = pandoc.List()
+
+            -- add display math top level
+            result:extend(displaymath)
+
+            -- emit warning
+            io.stderr:write("[WARNING]  [bulletlist_displaymath.lua]  GitHub does render display math in ordered list items not correctly after inline math (moving display math outside ordered list)\n")
+        end
+    end
+
+    -- close remaining orderedlist
+    if #curr_orderedlist > 0 then
+        result:insert(pandoc.OrderedList(curr_orderedlist))
+    end
+
+    -- replace original BulletPoint with list of blocks
+    return result
+end
