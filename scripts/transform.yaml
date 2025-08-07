@@ -1,0 +1,17 @@
+## Options to move (most of the) YAML headers into the document
+## (see https://pandoc.org/MANUAL.html#defaults-files)
+
+## general options
+from: markdown+lists_without_preceding_blankline
+to: markdown+smart+four_space_rule-grid_tables-multiline_tables-simple_tables
+
+
+## reader options
+filters:
+  - ${.}/document/transform.lua
+
+
+## writer options
+standalone: true
+columns: 120
+#reference-links: true
