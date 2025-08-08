@@ -9,6 +9,7 @@ to: pdf
 ## reader options
 filters:
   - ${.}/elements/deprecated.lua
+  - ${.}/elements/divtometa.lua
   - ${.}/document/handout.lua
   - ${.}/document/latex.lua
   - ${.}/elements/origin.lua

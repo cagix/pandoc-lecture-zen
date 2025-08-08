@@ -9,6 +9,7 @@ to: beamer
 ## reader options
 filters:
   - ${.}/elements/deprecated.lua
+  - ${.}/elements/divtometa.lua
   - ${.}/document/slides.lua
   - ${.}/document/latex.lua
   - ${.}/elements/origin.lua

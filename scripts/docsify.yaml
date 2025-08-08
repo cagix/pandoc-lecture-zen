@@ -9,6 +9,7 @@ to: markdown-bracketed_spans-fenced_divs-simple_tables-multiline_tables-grid_tab
 ## reader options
 filters:
   - ${.}/elements/deprecated.lua
+  - ${.}/elements/divtometa.lua
   - ${.}/document/handout.lua
   - ${.}/document/markdown.lua
   - ${.}/elements/origin.lua

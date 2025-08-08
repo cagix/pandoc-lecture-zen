@@ -18,23 +18,13 @@ function Pandoc(doc)
             end
 
             if doc.meta.youtube then
-                local bullets = pandoc.List()
-                for _, v in ipairs(doc.meta.youtube) do
-                    local str_link = pandoc.utils.stringify(v.link)
-                    bullets:insert(pandoc.Link(v.name or str_link, str_link))
-                end
                 quote:insert(pandoc.Plain(pandoc.Strong("Videos")))
-                quote:insert(pandoc.BulletList(bullets))
+                quote:extend(doc.meta.youtube)
             end
 
             if doc.meta.attachments then
-                local bullets = pandoc.List()
-                for _, v in ipairs(doc.meta.attachments) do
-                    local str_link = pandoc.utils.stringify(v.link)
-                    bullets:insert(pandoc.Link(v.name or str_link, str_link))
-                end
                 quote:insert(pandoc.Plain(pandoc.Strong("Unterlagen")))
-                quote:insert(pandoc.BulletList(bullets))
+                quote:extend(doc.meta.attachments)
             end
 
             quote:insert(pandoc.RawBlock('latex', '\\end{important-box}'))
@@ -53,9 +43,7 @@ function Pandoc(doc)
         if doc.meta.readings then
             -- assuming top-level heading: h1, shifting: none
             blocks:insert(pandoc.Header(1, "Zum Nachlesen"))
-            blocks:insert(pandoc.BulletList(
-                doc.meta.readings:map(function(e) return pandoc.Span(e) end)
-            ))
+            blocks:extend(doc.meta.readings)
         end
     end
 
@@ -67,27 +55,16 @@ function Pandoc(doc)
             quote:insert(pandoc.RawBlock('latex', '\\small'))
 
             if doc.meta.outcomes then
-                local bullets = pandoc.List()
-                for _, e in ipairs(doc.meta.outcomes) do
-                    for k, v in pairs(e) do
-                        bullets:insert(pandoc.Str(k .. ": " .. pandoc.utils.stringify(v)))
-                    end
-                end
                 quote:insert(pandoc.RawBlock('latex', '\\begin{tip-box}'))
                 quote:insert(pandoc.Plain(pandoc.Strong("Lernziele")))
-                quote:insert(pandoc.BulletList(bullets))
+                quote:extend(doc.meta.outcomes)
                 quote:insert(pandoc.RawBlock('latex', '\\end{tip-box}'))
             end
 
             if doc.meta.quizzes then
-                local bullets = pandoc.List()
-                for _, v in ipairs(doc.meta.quizzes) do
-                    local str_link = pandoc.utils.stringify(v.link)
-                    bullets:insert(pandoc.Link(v.name or str_link, str_link))
-                end
                 quote:insert(pandoc.RawBlock('latex', '\\begin{tip-box}'))
                 quote:insert(pandoc.Plain(pandoc.Strong("Quizzes")))
-                quote:insert(pandoc.BulletList(bullets))
+                quote:extend(doc.meta.quizzes)
                 quote:insert(pandoc.RawBlock('latex', '\\end{tip-box}'))
             end
 

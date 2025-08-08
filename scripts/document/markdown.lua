@@ -74,26 +74,16 @@ function Pandoc(doc)
         end
 
         if doc.meta.youtube then
-            local bullets = pandoc.List()
-            for _, v in ipairs(doc.meta.youtube) do
-                local str_link = pandoc.utils.stringify(v.link)
-                bullets:insert(pandoc.Link(v.name or str_link, str_link))
-            end
             quote:insert(pandoc.RawBlock("markdown", '<details>'))
             quote:insert(pandoc.RawBlock("markdown", '<summary><strong>🎦 Videos</strong></summary>'))
-            quote:insert(pandoc.BulletList(bullets))
+            quote:extend(doc.meta.youtube)
             quote:insert(pandoc.RawBlock("markdown", '</details>'))
         end
 
         if doc.meta.attachments then
-            local bullets = pandoc.List()
-            for _, v in ipairs(doc.meta.attachments) do
-                local str_link = pandoc.utils.stringify(v.link)
-                bullets:insert(pandoc.Link(v.name or str_link, str_link))
-            end
             quote:insert(pandoc.RawBlock("markdown", '<details>'))
             quote:insert(pandoc.RawBlock("markdown", '<summary><strong>🖇 Unterlagen</strong></summary>'))
-            quote:insert(pandoc.BulletList(bullets))
+            quote:extend(doc.meta.attachments)
             quote:insert(pandoc.RawBlock("markdown", '</details>'))
         end
 
@@ -108,9 +98,7 @@ function Pandoc(doc)
         -- insert manually as `pandoc.Header(2, "📖 Zum Nachlesen")` will be shifted like all other headings
         -- assuming top-level heading: h1, shifting: +1
         blocks:insert(pandoc.RawBlock("markdown", '## 📖 Zum Nachlesen'))
-        blocks:insert(pandoc.BulletList(
-            doc.meta.readings:map(function(e) return pandoc.Span(e) end)
-        ))
+        blocks:extend(doc.meta.readings)
     end
 
     -- Outcomes, Quizzes, and Challenges
@@ -120,27 +108,16 @@ function Pandoc(doc)
         quote:insert(pandoc.RawBlock("markdown", '[!TIP]'))
 
         if doc.meta.outcomes then
-            local bullets = pandoc.List()
-            for _, e in ipairs(doc.meta.outcomes) do
-                for k, v in pairs(e) do
-                    bullets:insert(pandoc.Str(k .. ": " .. pandoc.utils.stringify(v)))
-                end
-            end
             quote:insert(pandoc.RawBlock("markdown", '<details>'))
             quote:insert(pandoc.RawBlock("markdown", '<summary><strong>✅ Lernziele</strong></summary>'))
-            quote:insert(pandoc.BulletList(bullets))
+            quote:extend(doc.meta.outcomes)
             quote:insert(pandoc.RawBlock("markdown", '</details>'))
         end
 
         if doc.meta.quizzes then
-            local bullets = pandoc.List()
-            for _, v in ipairs(doc.meta.quizzes) do
-                local str_link = pandoc.utils.stringify(v.link)
-                bullets:insert(pandoc.Link(v.name or str_link, str_link))
-            end
             quote:insert(pandoc.RawBlock("markdown", '<details>'))
             quote:insert(pandoc.RawBlock("markdown", '<summary><strong>🧩 Quizzes</strong></summary>'))
-            quote:insert(pandoc.BulletList(bullets))
+            quote:extend(doc.meta.quizzes)
             quote:insert(pandoc.RawBlock("markdown", '</details>'))
         end
 

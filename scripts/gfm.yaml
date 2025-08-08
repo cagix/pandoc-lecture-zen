@@ -9,6 +9,7 @@ to: gfm
 ## reader options
 filters:
   - ${.}/elements/deprecated.lua
+  - ${.}/elements/divtometa.lua
   - ${.}/document/handout.lua
   - ${.}/document/markdown.lua
   - ${.}/elements/origin.lua
