@@ -14,7 +14,7 @@ filters:
 
 ## writer options
 standalone: true
-columns: 120
+columns: 85
 #wrap: preserve
 #reference-links: true
 #reference-location: section
