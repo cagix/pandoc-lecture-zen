@@ -127,7 +127,7 @@ transform: $(ROOT_DEPS)
 	for file in $(MARKDOWN_SRC); do \
 		$(PANDOC_MIN) $(OPTIONS) $$file -o $$file; \
 	done
-
+#	find . -type f -name "*.md" -print0 | xargs -0 -I{} $(PANDOC_MIN) $(OPTIONS) "{}" -o "{}"
 
 $(GFM_MARKDOWN_TARGETS):
 	$(create-folder)
