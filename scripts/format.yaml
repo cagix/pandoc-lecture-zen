@@ -1,4 +1,4 @@
-## Options to move (most of the) YAML headers into the document
+## Options to (re-)format documents properly
 ## (see https://pandoc.org/MANUAL.html#defaults-files)
 
 ## general options
@@ -9,7 +9,7 @@ to: markdown+smart+four_space_rule-grid_tables-multiline_tables-simple_tables
 ## reader options
 filters:
   - ${.}/elements/deprecated.lua
-  - ${.}/document/transform.lua
+  - ${.}/document/format.lua
 
 
 ## writer options

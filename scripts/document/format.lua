@@ -1,4 +1,4 @@
--- "Template" for moving (most of the) YAML headers into document
+-- "Template" for (re-)formatting documents properly
 
 --- Structure of the document (should be done w/ template, but quotes won't work)
 function Pandoc(doc)

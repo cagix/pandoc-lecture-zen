@@ -86,7 +86,7 @@ $(ROOT_DEPS): $(METADATA)
 	$(PANDOC_MIN)  -L $(PANDOC_DATA)/scripts/makedeps.lua  -M prefix=$(OUTPUT_DIR)  -f markdown -t markdown  $<  -o $@
 
 ## this needs docker/pandoc, so do only include (and build) when required
-ifeq ($(MAKECMDGOALS), $(filter $(MAKECMDGOALS),gfm docsify pdf beamer transform))
+ifeq ($(MAKECMDGOALS), $(filter $(MAKECMDGOALS),gfm docsify pdf beamer format))
 -include $(ROOT_DEPS)
 PDF_BEAMER_TARGETS      = $(patsubst %.md,$(OUTPUT_DIR)/%.pdf,$(MARKDOWN_SRC))
 PDF_TARGETS             = $(patsubst %.md,$(OUTPUT_DIR)/%.pdf,$(filter-out $(NO_PDF),$(MARKDOWN_SRC)))
@@ -121,9 +121,9 @@ pdf: OPTIONS           += -d $(PANDOC_DATA)/scripts/pdf.yaml
 beamer: $(ROOT_DEPS) $$(BEAMER_TARGETS)
 beamer: OPTIONS        += -d $(PANDOC_DATA)/scripts/beamer.yaml
 
-## Transform: move (most of the) YAML headers into the document
-transform: OPTIONS      = -d $(PANDOC_DATA)/scripts/transform.yaml
-transform: $(ROOT_DEPS)
+## Format: move (most of the) YAML headers into the document
+format: OPTIONS         = -d $(PANDOC_DATA)/scripts/format.yaml
+format: $(ROOT_DEPS)
 	for file in $(MARKDOWN_SRC); do \
 		$(PANDOC_MIN) $(OPTIONS) $$file -o $$file; \
 	done
@@ -162,4 +162,4 @@ endef
 ###############################################################################
 
 
-.PHONY: all docker gfm docsify pdf beamer transform clean distclean
+.PHONY: all docker gfm docsify pdf beamer format clean distclean
