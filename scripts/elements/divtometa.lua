@@ -9,6 +9,9 @@ function Pandoc(doc)
         Div = function(el)
             local env = el.classes[1]
             if divs:includes(env) then
+                if meta[env] then
+                    io.stderr:write("[WARNING]  [divtometa.lua]  meta data key '" .. env .. "' will be overwritten w/ content from document\n")
+                end
                 meta[env] = el.content
                 return {}
             end

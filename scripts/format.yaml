@@ -9,6 +9,7 @@ to: markdown+smart+four_space_rule-grid_tables-multiline_tables-simple_tables
 ## reader options
 filters:
   - ${.}/elements/deprecated.lua
+  - ${.}/elements/divtometa.lua
   - ${.}/document/format.lua
 
 

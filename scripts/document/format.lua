@@ -11,22 +11,12 @@ function Pandoc(doc)
     end
 
     if doc.meta.youtube then
-        local bullets = pandoc.List()
-        for _, v in ipairs(doc.meta.youtube) do
-            local str_link = pandoc.utils.stringify(v.link)
-            bullets:insert(pandoc.Link(v.name or str_link, str_link))
-        end
-        blocks:insert(pandoc.Div(pandoc.BulletList(bullets), {class = 'youtube'}))
+        blocks:insert(pandoc.Div(doc.meta.youtube, {class = 'youtube'}))
         doc.meta.youtube = nil
     end
 
     if doc.meta.attachments then
-        local bullets = pandoc.List()
-        for _, v in ipairs(doc.meta.attachments) do
-            local str_link = pandoc.utils.stringify(v.link)
-            bullets:insert(pandoc.Link(v.name or str_link, str_link))
-        end
-        blocks:insert(pandoc.Div(pandoc.BulletList(bullets), {class = 'attachments'}))
+        blocks:insert(pandoc.Div(doc.meta.attachments, {class = 'attachments'}))
         doc.meta.attachments = nil
     end
 
@@ -35,31 +25,18 @@ function Pandoc(doc)
 
     -- Literature
     if doc.meta.readings then
-        blocks:insert(pandoc.Div(pandoc.BulletList(
-                    doc.meta.readings:map(function(e) return pandoc.Span(e) end)
-                ), {class = 'readings'}))
+        blocks:insert(pandoc.Div(doc.meta.readings, {class = 'readings'}))
         doc.meta.readings = nil
     end
 
     -- Outcomes, Quizzes, and Challenges
     if doc.meta.outcomes then
-        local bullets = pandoc.List()
-        for _, e in ipairs(doc.meta.outcomes) do
-            for k, v in pairs(e) do
-                bullets:insert(pandoc.Str(k .. ": " .. pandoc.utils.stringify(v)))
-            end
-        end
-        blocks:insert(pandoc.Div(pandoc.BulletList(bullets), {class = 'outcomes'}))
+        blocks:insert(pandoc.Div(doc.meta.outcomes, {class = 'outcomes'}))
         doc.meta.outcomes = nil
     end
 
     if doc.meta.quizzes then
-        local bullets = pandoc.List()
-        for _, v in ipairs(doc.meta.quizzes) do
-            local str_link = pandoc.utils.stringify(v.link)
-            bullets:insert(pandoc.Link(v.name or str_link, str_link))
-        end
-        blocks:insert(pandoc.Div(pandoc.BulletList(bullets), {class = 'quizzes'}))
+        blocks:insert(pandoc.Div(doc.meta.quizzes, {class = 'quizzes'}))
         doc.meta.quizzes = nil
     end
 
