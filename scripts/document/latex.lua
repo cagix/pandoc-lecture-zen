@@ -1,104 +1,89 @@
 -- "Template" for Beamer and PDF
 
---- Structure of the document (should be done w/ template, but quotes won't work)
+-- Custom divs to be handled ('readings' is different)
+local divs = {
+    tldr = {
+        quote   = "important",
+        details = "small",
+        summary = "TL;DR"
+    },
+    youtube = {
+        quote   = "tip",
+        details = "small",
+        summary = "Videos"
+    },
+    attachments = {
+        quote   = "note",
+        details = "small",
+        summary = "Weitere Unterlagen"
+    },
+    outcomes = {
+        quote   = "note",
+        details = "small",
+        summary = "Lernziele"
+    },
+    quizzes = {
+        quote   = "tip",
+        details = "small",
+        summary = "Quizzes"
+    },
+    challenges = {
+        quote   = "tip",
+        details = "small",
+        summary = "Challenges"
+    }
+}
+
+local function makeQuote(quote, details, summary, content)
+    return pandoc.Div(
+        pandoc.Div(
+            content, {class = "details", title = summary, fontsize = details}
+        ), {class = quote}
+    )
+end
+
+
+function Div(el)
+    local env = el.classes[1]
+
+    -- handle custom divs
+    if divs[env] then
+        if FORMAT:match 'latex' then
+            -- wrap content in "details" div
+            local defs = divs[env]
+            return makeQuote(defs.quote, defs.details, defs.summary, el.content)
+        end
+        if FORMAT:match 'beamer' then
+            return {}
+        end
+    end
+
+    -- handle 'readings' separately
+    if env == "readings" then
+        if FORMAT:match 'latex' then
+            -- assuming top-level heading: h1, shifting: +1
+            return { pandoc.Header(1, 'Zum Nachlesen') } .. el.content
+        end
+        if FORMAT:match 'beamer' then
+            return {}
+        end
+    end
+end
+
+
+--- Rework the document (should be done w/ template, but quotes won't work)
 function Pandoc(doc)
     local blocks = pandoc.List()
 
-    -- TL;DR and Videos (PDF)
-    if FORMAT:match 'latex' then
-        if doc.meta.tldr or doc.meta.youtube or doc.meta.attachments then
-            local quote = pandoc.List()
-
-            quote:insert(pandoc.RawBlock('latex', '\\begin{important-box}'))
-            quote:insert(pandoc.RawBlock('latex', '\\small'))
-
-            if doc.meta.tldr then
-                quote:insert(pandoc.Plain(pandoc.Strong("TL;DR")))
-                quote:extend(doc.meta.tldr)
-            end
-
-            if doc.meta.youtube then
-                quote:insert(pandoc.Plain(pandoc.Strong("Videos")))
-                quote:extend(doc.meta.youtube)
-            end
-
-            if doc.meta.attachments then
-                quote:insert(pandoc.Plain(pandoc.Strong("Unterlagen")))
-                quote:extend(doc.meta.attachments)
-            end
-
-            quote:insert(pandoc.RawBlock('latex', '\\end{important-box}'))
-            quote:insert(pandoc.RawBlock('latex', '\\normalsize'))
-
-            blocks:extend(quote)
-            blocks:insert(pandoc.HorizontalRule())
-        end
-    end
-
-    -- Main Doc (do not shift headings level - take this document as is)
+    -- Main Doc
     blocks:extend(doc.blocks)
-
-    -- Literature (PDF)
-    if FORMAT:match 'latex' then
-        if doc.meta.readings then
-            -- assuming top-level heading: h1, shifting: none
-            blocks:insert(pandoc.Header(1, "Zum Nachlesen"))
-            blocks:extend(doc.meta.readings)
-        end
-    end
-
-    -- Outcomes, Quizzes, and Challenges (PDF)
-    if FORMAT:match 'latex' then
-        if doc.meta.outcomes or doc.meta.quizzes or doc.meta.challenges then
-            local quote = pandoc.List()
-
-            quote:insert(pandoc.RawBlock('latex', '\\small'))
-
-            if doc.meta.outcomes then
-                quote:insert(pandoc.RawBlock('latex', '\\begin{tip-box}'))
-                quote:insert(pandoc.Plain(pandoc.Strong("Lernziele")))
-                quote:extend(doc.meta.outcomes)
-                quote:insert(pandoc.RawBlock('latex', '\\end{tip-box}'))
-            end
-
-            if doc.meta.quizzes then
-                quote:insert(pandoc.RawBlock('latex', '\\begin{tip-box}'))
-                quote:insert(pandoc.Plain(pandoc.Strong("Quizzes")))
-                quote:extend(doc.meta.quizzes)
-                quote:insert(pandoc.RawBlock('latex', '\\end{tip-box}'))
-            end
-
-            if doc.meta.challenges then
-                quote:insert(pandoc.RawBlock('latex', '\\begin{tip-box}'))
-                quote:insert(pandoc.Plain(pandoc.Strong("Challenges")))
-                quote:extend(doc.meta.challenges)
-                quote:insert(pandoc.RawBlock('latex', '\\end{tip-box}'))
-            end
-
-            quote:insert(pandoc.RawBlock('latex', '\\normalsize'))
-
-            blocks:insert(pandoc.HorizontalRule())
-            blocks:extend(quote)
-        end
-    end
 
     -- References (PDF)
     if FORMAT:match 'latex' then
         local refs = pandoc.utils.references(doc)
         if refs and #refs > 0 then
-            local quote = pandoc.List()
-
-            quote:insert(pandoc.RawBlock('latex', '\\small'))
-            quote:insert(pandoc.RawBlock('latex', '\\begin{info-box}'))
-
-            quote:insert(pandoc.Plain(pandoc.Strong("Quellen")))
-            quote:extend(doc.meta.refs)
-
-            quote:insert(pandoc.RawBlock('latex', '\\end{info-box}'))
-            quote:insert(pandoc.RawBlock('latex', '\\normalsize'))
-
             blocks:insert(pandoc.HorizontalRule())
-            blocks:extend(quote)
+            blocks:insert(makeQuote("note", "small", "Quellen", doc.meta.refs))
         end
     end
 
