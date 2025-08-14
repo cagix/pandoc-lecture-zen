@@ -12,11 +12,7 @@ function Pandoc(doc)
         local refs = pandoc.utils.references(doc)
         if refs and #refs > 0 then
             blocks:insert(pandoc.HorizontalRule())
-            blocks:insert(pandoc.Div(
-                    pandoc.Div(
-                        doc.meta.refs, {class = "details", title = "Quellen", opt = "small"}
-                    ), {class = "note"}
-                ))
+            blocks:insert(pandoc.Div(doc.meta.refs, {class = 'bibliography'}))
         end
     end
 

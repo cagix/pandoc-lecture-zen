@@ -6,43 +6,50 @@ local divs = {
         details  = " open",
         fontsize = "small",
         icon     = "🎯",
-        summary  = "TL;DR"
+        summary  = "TL;DR",
     },
     youtube = {
         quote    = "tip",
         details  = "",
         fontsize = "small",
         icon     = "🎦",
-        summary  = "Videos"
+        summary  = "Videos",
     },
     attachments = {
         quote    = "note",
         details  = "",
         fontsize = "small",
         icon     = "🖇",
-        summary  = "Weitere Unterlagen"
+        summary  = "Weitere Unterlagen",
     },
     outcomes = {
         quote    = "note",
         details  = "",
         fontsize = "small",
         icon     = "✅",
-        summary  = "Lernziele"
+        summary  = "Lernziele",
     },
     quizzes = {
         quote    = "tip",
         details  = "",
         fontsize = "small",
         icon     = "🧩",
-        summary  = "Quizzes"
+        summary  = "Quizzes",
     },
     challenges = {
         quote    = "tip",
         details  = "",
         fontsize = "small",
         icon     = "🏅",
-        summary  = "Challenges"
-    }
+        summary  = "Challenges",
+    },
+    bibliography = {
+        quote    = "note",
+        details  = "",
+        fontsize = "small",
+        icon     = "👀",
+        summary  = "Quellen",
+    },
 }
 
 local function makeQuote(quote, details, summary, content)
