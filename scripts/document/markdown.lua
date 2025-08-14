@@ -1,14 +1,72 @@
 -- "Template" for GFM and Docsify
 
+-- Custom divs to be handled ('readings' is different)
+local divs = {
+    tldr = {
+        quote   = "important",
+        details = " open",
+        summary = "🎯 TL;DR"
+    },
+    youtube = {
+        quote   = "tip",
+        details = "",
+        summary = "🎦 Videos"
+    },
+    attachments = {
+        quote   = "note",
+        details = "",
+        summary = "🖇 Weitere Unterlagen"
+    },
+    outcomes = {
+        quote   = "note",
+        details = "",
+        summary = "✅ Lernziele"
+    },
+    quizzes = {
+        quote   = "tip",
+        details = "",
+        summary = "🧩 Quizzes"
+    },
+    challenges = {
+        quote   = "tip",
+        details = "",
+        summary = "🏅 Challenges"
+    }
+}
+
+local function makeQuote(quote, details, summary, content)
+    return pandoc.Div(
+        pandoc.Div(
+            content, {class = "details", title = summary, open = details}
+        ), {class = quote}
+    )
+end
+
+
 function Div(el)
+    local env = el.classes[1]
+
     -- remove columns, but keep content
-    if el.classes[1] == "columns" then
+    if env == "columns" then
         io.stderr:write("[WARNING]  [markdown.lua]  columns are not really supported in docsify/gfm\n")
         return el.content
     end
-    if el.classes[1] == "column" then
+    if env == "column" then
         io.stderr:write("[WARNING]  [markdown.lua]  columns are not really supported in docsify/gfm\n")
         return el.content
+    end
+
+    -- handle custom divs
+    if divs[env] then
+        -- wrap content in "details" div
+        local defs = divs[env]
+        return makeQuote(defs.quote, defs.details, defs.summary, el.content)
+    end
+
+    -- handle 'readings' separately
+    if env == "readings" then
+        -- assuming top-level heading: h1, shifting: +1
+        return { pandoc.Header(1, '📖 Zum Nachlesen') } .. el.content
     end
 end
 
@@ -50,101 +108,25 @@ if FORMAT:match 'markdown' then
 end
 
 
---- Structure of the document (should be done w/ template, but quotes won't work)
+--- Rework the document (should be done w/ template, but quotes won't work)
 function Pandoc(doc)
     local blocks = pandoc.List()
 
     -- Title
     if doc.meta.title then
-        -- insert manually as `pandoc.Header(1, doc.meta.title)` will be shifted like all other headings
-        blocks:insert(pandoc.RawBlock("markdown", '# ' .. pandoc.utils.stringify(doc.meta.title)))
-    end
-
-    -- TL;DR and Videos
-    if doc.meta.tldr or doc.meta.youtube or doc.meta.attachments then
-        local quote = pandoc.List()
-
-        quote:insert(pandoc.RawBlock("markdown", '[!NOTE]'))
-
-        if doc.meta.tldr then
-            quote:insert(pandoc.RawBlock("markdown", '<details open>'))
-            quote:insert(pandoc.RawBlock("markdown", '<summary><strong>🎯 TL;DR</strong></summary>'))
-            quote:extend(doc.meta.tldr)
-            quote:insert(pandoc.RawBlock("markdown", '</details>'))
-        end
-
-        if doc.meta.youtube then
-            quote:insert(pandoc.RawBlock("markdown", '<details>'))
-            quote:insert(pandoc.RawBlock("markdown", '<summary><strong>🎦 Videos</strong></summary>'))
-            quote:extend(doc.meta.youtube)
-            quote:insert(pandoc.RawBlock("markdown", '</details>'))
-        end
-
-        if doc.meta.attachments then
-            quote:insert(pandoc.RawBlock("markdown", '<details>'))
-            quote:insert(pandoc.RawBlock("markdown", '<summary><strong>🖇 Unterlagen</strong></summary>'))
-            quote:extend(doc.meta.attachments)
-            quote:insert(pandoc.RawBlock("markdown", '</details>'))
-        end
-
-        blocks:insert(pandoc.BlockQuote(quote))
+        -- assuming top-level heading: h1, shifting: +1
+        blocks:insert(pandoc.Header(0, doc.meta.title))
+        doc.meta.title = nil
     end
 
     -- Main Doc
     blocks:extend(doc.blocks)
 
-    -- Literature
-    if doc.meta.readings then
-        -- insert manually as `pandoc.Header(2, "📖 Zum Nachlesen")` will be shifted like all other headings
-        -- assuming top-level heading: h1, shifting: +1
-        blocks:insert(pandoc.RawBlock("markdown", '## 📖 Zum Nachlesen'))
-        blocks:extend(doc.meta.readings)
-    end
-
-    -- Outcomes, Quizzes, and Challenges
-    if doc.meta.outcomes or doc.meta.quizzes or doc.meta.challenges then
-        local quote = pandoc.List()
-
-        quote:insert(pandoc.RawBlock("markdown", '[!TIP]'))
-
-        if doc.meta.outcomes then
-            quote:insert(pandoc.RawBlock("markdown", '<details>'))
-            quote:insert(pandoc.RawBlock("markdown", '<summary><strong>✅ Lernziele</strong></summary>'))
-            quote:extend(doc.meta.outcomes)
-            quote:insert(pandoc.RawBlock("markdown", '</details>'))
-        end
-
-        if doc.meta.quizzes then
-            quote:insert(pandoc.RawBlock("markdown", '<details>'))
-            quote:insert(pandoc.RawBlock("markdown", '<summary><strong>🧩 Quizzes</strong></summary>'))
-            quote:extend(doc.meta.quizzes)
-            quote:insert(pandoc.RawBlock("markdown", '</details>'))
-        end
-
-        if doc.meta.challenges then
-            quote:insert(pandoc.RawBlock("markdown", '<details>'))
-            quote:insert(pandoc.RawBlock("markdown", '<summary><strong>🏅 Challenges</strong></summary>'))
-            quote:extend(doc.meta.challenges)
-            quote:insert(pandoc.RawBlock("markdown", '</details>'))
-        end
-
-        blocks:insert(pandoc.HorizontalRule())
-        blocks:insert(pandoc.BlockQuote(quote))
-    end
-
     -- References
     local refs = pandoc.utils.references(doc)
     if refs and #refs > 0 then
-        local quote = pandoc.List()
-
-        quote:insert(pandoc.RawBlock("markdown", '[!NOTE]'))
-        quote:insert(pandoc.RawBlock("markdown", '<details>'))
-        quote:insert(pandoc.RawBlock("markdown", '<summary><strong>👀 Quellen</strong></summary>'))
-        quote:extend(doc.meta.refs)
-        quote:insert(pandoc.RawBlock("markdown", '</details>'))
-
         blocks:insert(pandoc.HorizontalRule())
-        blocks:insert(pandoc.BlockQuote(quote))
+        blocks:insert(makeQuote("note", "", "👀 Quellen", doc.meta.refs))
     end
 
     -- License (and exceptions)

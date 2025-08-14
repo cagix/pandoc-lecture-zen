@@ -8,8 +8,6 @@ to: beamer
 
 ## reader options
 filters:
-  - ${.}/elements/deprecated.lua
-  - ${.}/elements/divtometa.lua
   - ${.}/document/slides.lua
   - ${.}/document/latex.lua
   - ${.}/elements/origin.lua
@@ -20,6 +18,7 @@ filters:
   - ${.}/elements/details.lua
   - ${.}/elements/ghalerts.lua
   - ${.}/elements/code.lua
+  - ${.}/elements/deprecated.lua
 
 
 ## writer options

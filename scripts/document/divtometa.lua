@@ -1,6 +1,6 @@
 -- Fetch custom divs and move content to meta data
 
--- Divs to be handled
+-- Custom divs to be handled
 local divs = pandoc.List:new {'tldr', 'youtube', 'attachments', 'readings', 'outcomes', 'quizzes', 'challenges'}
 
 function Pandoc(doc)
