@@ -3,7 +3,7 @@
 
 --- Structure of the document (should be done w/ template, but quotes won't work)
 function Pandoc(doc)
-    local blocks = pandoc.List
+    local blocks = pandoc.List()
 
     local handle = function(div)
         if doc.meta[div] then
