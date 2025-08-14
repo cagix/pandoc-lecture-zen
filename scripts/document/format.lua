@@ -1,34 +1,59 @@
 -- "Template" for (re-)formatting documents properly
--- custom divs are expected to be found in meta data (divtometa.lua)
 
---- Structure of the document (should be done w/ template, but quotes won't work)
-function Pandoc(doc)
+-- Custom divs to be handled
+local divs = pandoc.List:new {'tldr', 'youtube', 'attachments', 'readings', 'outcomes', 'quizzes', 'challenges'}
+
+
+-- lift all custom divs to meta data
+local function liftdivs(doc)
+    local meta = doc.meta
+
+    local blocks = doc.blocks:walk({
+        Div = function(el)
+            local env = el.classes[1]
+            if divs:includes(env) then
+                if meta[env] then
+                    io.stderr:write("[WARNING]  [format.lua]  meta data key '" .. env .. "' will be overwritten w/ content from document\n")
+                end
+                meta[env] = el.content
+                return {}
+            end
+        end
+    })
+
+    return pandoc.Pandoc(blocks, meta)
+end
+
+
+-- put custom divs back into document at proper position
+local function format(doc)
+    local meta = doc.meta
     local blocks = pandoc.List()
 
     local handle = function(div)
-        if doc.meta[div] then
-            blocks:insert(pandoc.Div(doc.meta[div], {class = div}))
-            doc.meta[div] = nil
+        if meta[div] then
+            blocks:insert(pandoc.Div(meta[div], {class = div}))
+            meta[div] = nil
         end
     end
 
-    -- TL;DR and Videos and Files
     handle("tldr")
     handle("youtube")
     handle("attachments")
 
-    -- Main Doc
     blocks:extend(doc.blocks)
 
-    -- Literature
     handle("readings")
 
-    -- Outcomes, Quizzes, and Challenges
     handle("outcomes")
     handle("quizzes")
     handle("challenges")
 
+    return pandoc.Pandoc(blocks, meta)
+end
 
-    -- Finé
-    return pandoc.Pandoc(blocks, doc.meta)
+
+--- Structure of the document (should be done w/ template, but quotes won't work)
+function Pandoc(doc)
+    return doc:walk { Pandoc = liftdivs }:walk { Pandoc = format }
 end
