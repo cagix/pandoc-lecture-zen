@@ -10,6 +10,7 @@ to: beamer
 filters:
   - ${.}/document/slides.lua
   - ${.}/document/latex.lua
+  - ${.}/elements/wrapcustomdivs.lua
   - ${.}/elements/origin.lua
   - ${.}/elements/ex.lua
   - ${.}/elements/math.lua
