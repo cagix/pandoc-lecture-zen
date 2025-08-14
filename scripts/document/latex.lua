@@ -1,76 +1,5 @@
 -- "Template" for Beamer and PDF
 
--- Custom divs to be handled ('readings' is different)
-local divs = {
-    tldr = {
-        quote   = "important",
-        details = "small",
-        summary = "TL;DR"
-    },
-    youtube = {
-        quote   = "tip",
-        details = "small",
-        summary = "Videos"
-    },
-    attachments = {
-        quote   = "note",
-        details = "small",
-        summary = "Weitere Unterlagen"
-    },
-    outcomes = {
-        quote   = "note",
-        details = "small",
-        summary = "Lernziele"
-    },
-    quizzes = {
-        quote   = "tip",
-        details = "small",
-        summary = "Quizzes"
-    },
-    challenges = {
-        quote   = "tip",
-        details = "small",
-        summary = "Challenges"
-    }
-}
-
-local function makeQuote(quote, details, summary, content)
-    return pandoc.Div(
-        pandoc.Div(
-            content, {class = "details", title = summary, fontsize = details}
-        ), {class = quote}
-    )
-end
-
-
-function Div(el)
-    local env = el.classes[1]
-
-    -- handle custom divs
-    if divs[env] then
-        if FORMAT:match 'latex' then
-            -- wrap content in "details" div
-            local defs = divs[env]
-            return makeQuote(defs.quote, defs.details, defs.summary, el.content)
-        end
-        if FORMAT:match 'beamer' then
-            return {}
-        end
-    end
-
-    -- handle 'readings' separately
-    if env == "readings" then
-        if FORMAT:match 'latex' then
-            -- assuming top-level heading: h1, shifting: +1
-            return { pandoc.Header(1, 'Zum Nachlesen') } .. el.content
-        end
-        if FORMAT:match 'beamer' then
-            return {}
-        end
-    end
-end
-
-
 --- Rework the document (should be done w/ template, but quotes won't work)
 function Pandoc(doc)
     local blocks = pandoc.List()
@@ -83,7 +12,11 @@ function Pandoc(doc)
         local refs = pandoc.utils.references(doc)
         if refs and #refs > 0 then
             blocks:insert(pandoc.HorizontalRule())
-            blocks:insert(makeQuote("note", "small", "Quellen", doc.meta.refs))
+            blocks:insert(pandoc.Div(
+                    pandoc.Div(
+                        doc.meta.refs, {class = "details", title = "Quellen", opt = "small"}
+                    ), {class = "note"}
+                ))
         end
     end
 

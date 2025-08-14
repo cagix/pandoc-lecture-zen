@@ -1,48 +1,5 @@
 -- "Template" for GFM and Docsify
 
--- Custom divs to be handled ('readings' is different)
-local divs = {
-    tldr = {
-        quote   = "important",
-        details = " open",
-        summary = "🎯 TL;DR"
-    },
-    youtube = {
-        quote   = "tip",
-        details = "",
-        summary = "🎦 Videos"
-    },
-    attachments = {
-        quote   = "note",
-        details = "",
-        summary = "🖇 Weitere Unterlagen"
-    },
-    outcomes = {
-        quote   = "note",
-        details = "",
-        summary = "✅ Lernziele"
-    },
-    quizzes = {
-        quote   = "tip",
-        details = "",
-        summary = "🧩 Quizzes"
-    },
-    challenges = {
-        quote   = "tip",
-        details = "",
-        summary = "🏅 Challenges"
-    }
-}
-
-local function makeQuote(quote, details, summary, content)
-    return pandoc.Div(
-        pandoc.Div(
-            content, {class = "details", title = summary, open = details}
-        ), {class = quote}
-    )
-end
-
-
 function Div(el)
     local env = el.classes[1]
 
@@ -54,19 +11,6 @@ function Div(el)
     if env == "column" then
         io.stderr:write("[WARNING]  [markdown.lua]  columns are not really supported in docsify/gfm\n")
         return el.content
-    end
-
-    -- handle custom divs
-    if divs[env] then
-        -- wrap content in "details" div
-        local defs = divs[env]
-        return makeQuote(defs.quote, defs.details, defs.summary, el.content)
-    end
-
-    -- handle 'readings' separately
-    if env == "readings" then
-        -- assuming top-level heading: h1, shifting: +1
-        return { pandoc.Header(1, '📖 Zum Nachlesen') } .. el.content
     end
 end
 
@@ -126,7 +70,11 @@ function Pandoc(doc)
     local refs = pandoc.utils.references(doc)
     if refs and #refs > 0 then
         blocks:insert(pandoc.HorizontalRule())
-        blocks:insert(makeQuote("note", "", "👀 Quellen", doc.meta.refs))
+        blocks:insert(pandoc.Div(
+                pandoc.Div(
+                    doc.meta.refs, {class = "details", title = "👀 Quellen", opt = ""}
+                ), {class = "note"}
+            ))
     end
 
     -- License (and exceptions)
