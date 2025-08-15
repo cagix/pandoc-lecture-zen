@@ -4,8 +4,8 @@
 -- and remove the outer math mode and return just the content.
 if (FORMAT:match 'latex') or (FORMAT:match 'beamer') then
     function Math(el)
-        i, j = el.text:find("begin{eqnarray}")
-        if i == 2 then  -- handle only "\\begin{eqnarray}" ...
+        if el.text:match "^%s*\\begin%{eqnarray%}" then
+            -- handle only "\\begin{eqnarray}" ...
             return pandoc.RawInline('latex', el.text)
         end
     end
