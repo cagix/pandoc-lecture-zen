@@ -4,11 +4,9 @@
 -- and remove the outer math mode and return just the content.
 if (FORMAT:match 'latex') or (FORMAT:match 'beamer') then
     function Math(el)
-        if el.mathtype == "DisplayMath" then
-            i, j = el.text:find("begin")
-            if i == 2 then  -- handle only DisplayMath with "\\begin{}" ...
-                return pandoc.RawInline('latex', el.text)
-            end
+        i, j = el.text:find("begin{eqnarray}")
+        if i == 2 then  -- handle only "\\begin{eqnarray}" ...
+            return pandoc.RawInline('latex', el.text)
         end
     end
 end
