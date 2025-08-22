@@ -25,7 +25,7 @@ function Pandoc(doc)
         blocks:insert(pandoc.RawBlock('latex', '\\newpage'))
         blocks:insert(pandoc.RawBlock('latex', '\\vspace*{\\fill}'))
         blocks:extend(doc.meta.license_footer)
-        blocks:insert(pandoc.Div('EXCEPTIONS', {class = 'exceptions'}))  -- marker for origin-filter
+        blocks:insert(pandoc.Div('EXCEPTIONS', {class = 'exceptions'}))  -- marker for credits-filter
     end
 
     -- Last modified (`git log -n 1 --pretty=reference -- $<`)

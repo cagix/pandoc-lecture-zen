@@ -15,6 +15,10 @@ function Span(el)
         warning("Span `bsp`: `[...]{.bsp}` is no longer supported => please use Span `ex` instead (`[...]{.ex}`)")
     end
 
+    if el.classes[1] == "origin" then
+        warning("Span `origin`: `[...]{.origin}` is no longer supported => please use Span `credits` instead (`[...]{.credits}`)")
+    end
+
     if el.classes[1] == "cbox" then
         warning("Span `cbox`: `[...]{.cbox}` is no longer supported")
     end

@@ -11,7 +11,7 @@ filters:
   - ${.}/document/handout.lua
   - ${.}/document/latex.lua
   - ${.}/elements/wrapcustomdivs.lua
-  - ${.}/elements/origin.lua
+  - ${.}/elements/credits.lua
   - ${.}/elements/ex.lua
   - ${.}/elements/math.lua
   - ${.}/elements/center.lua

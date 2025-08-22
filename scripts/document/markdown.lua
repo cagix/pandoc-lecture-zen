@@ -77,7 +77,7 @@ function Pandoc(doc)
     if doc.meta.license_footer and (not doc.meta.has_license) then
         blocks:insert(pandoc.HorizontalRule())
         blocks:extend(doc.meta.license_footer)
-        blocks:insert(pandoc.Div('EXCEPTIONS', {class = 'exceptions'}))  -- marker for origin-filter
+        blocks:insert(pandoc.Div('EXCEPTIONS', {class = 'exceptions'}))  -- marker for credits-filter
     end
 
     -- Last modified
