@@ -1,15 +1,17 @@
--- Collect all 'origin' spans - this is foreign material, i.e. should be listed as exceptions to our license
+-- Collect all 'origin' spans - this is alien material, i.e. should be listed as exceptions to our license
 credits = {}
 
-
---- Fetch all exceptions from our license and replace the custom marker
 exceptions = {
+    -- Format all 'origin' spans and collect all w/o "nolist" attribute
     Span = function(el)
-        -- Collect all 'origin' spans
+        -- Simple usage (credits only): `[AC-3 Algorithmus: Eigener Code basierend auf einer Idee nach [@Russell2020, p. 171, fig. 5.3]]{.origin nolist=true}`
+        -- Exception to license:        `[MapGermanyGraph.svg](https://commons.wikimedia.org/wiki/File:MapGermanyGraph.svg) by [Regnaron](https://de.wikipedia.org/wiki/Benutzer:Regnaron) and [Jahobr](https://commons.wikimedia.org/wiki/User:Jahobr) on Wikimedia Commons ([Public Domain](https://en.wikipedia.org/wiki/en:public_domain))]{.origin}`
         if el.classes[1] == "origin" then
-            -- use map to avoid duplicates
-            -- (when used in images, this would end up in alt text _and_ in caption)
-            credits[pandoc.utils.stringify(el.content)] = el.content
+            -- collect all w/o "nolist" attribute
+            -- use map to avoid duplicates (images: this would end up in alt text _and_ in caption)
+            if not el.attributes["nolist"] then
+                credits[pandoc.utils.stringify(el.content)] = el.content
+            end
 
             -- add "Quelle: " in front of content
             if (FORMAT:match 'latex') or (FORMAT:match 'beamer') then
@@ -26,6 +28,7 @@ exceptions = {
         end
     end,
 
+    -- Fetch all exceptions from our license and replace the custom marker "exceptions"
     Div = function(el)
         if el.classes[1] == "exceptions" then
             local bullets = pandoc.List()
