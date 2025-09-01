@@ -27,6 +27,9 @@ metadata:
 ## writer options
 strip-comments: true
 
+request-headers:
+  - ["User-Agent", "Mozilla/5.0"]
+
 ## scrbook: https://ftp.tu-chemnitz.de/pub/tex/macros/latex/contrib/koma-script/doc/scrguide-de.pdf
 template: eisvogel
 

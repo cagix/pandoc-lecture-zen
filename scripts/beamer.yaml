@@ -25,6 +25,9 @@ filters:
 ## writer options
 strip-comments: true
 
+request-headers:
+  - ["User-Agent", "Mozilla/5.0"]
+
 metadata:   ## must be "metadata" for the beamer.lua filter to be able to change the settings
   aspectratio: 1610
   fontsize: smaller
