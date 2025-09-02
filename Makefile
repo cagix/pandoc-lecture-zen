@@ -131,7 +131,7 @@ format: $(ROOT_DEPS)
 
 $(GFM_MARKDOWN_TARGETS):
 	$(create-folder)
-	$(PANDOC_MIN) $(OPTIONS)  -M lastmod="$(shell git log -n 1 --pretty=reference -- $<)"  $<  -o $@
+	$(PANDOC_MIN) $(OPTIONS)  -M lastmod="$$(git log -n 1 --pretty=reference -- '$<'  |  sed -e 's/[\"\\$$`]/\\&/g')"  $<  -o $@
 
 $(GFM_IMAGE_TARGETS):
 	$(create-dir-and-copy)
@@ -139,7 +139,7 @@ $(GFM_IMAGE_TARGETS):
 ## will cover PDF_TARGETS as well as BEAMER_TARGETS
 $(PDF_BEAMER_TARGETS): $$(patsubst $(OUTPUT_DIR)/%.pdf,%.md,$$@)
 	$(create-folder)
-	$(PANDOC_EXT) $(OPTIONS)  -M lastmod="$(shell git log -n 1 --pretty=reference -- $<)"  $<  -o $@
+	$(PANDOC_EXT) $(OPTIONS)  -M lastmod="$$(git log -n 1 --pretty=reference -- '$<'  |  sed -e 's/[\"\\$$`]/\\&/g')"  $<  -o $@
 
 
 ## Canned recipe for creating output folder
