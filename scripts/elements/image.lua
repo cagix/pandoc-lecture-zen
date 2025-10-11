@@ -1,5 +1,14 @@
 -- Handle image scaling
 
+-- helper function to check for local file
+local function localfile(name, base)
+    if pandoc.path.is_relative(name) and not name:match('https?://.*') then
+        return name
+    end
+    return base
+end
+
+
 if FORMAT:match 'beamer' then
     -- center images without captions too (like "real" images w/ caption aka figures)
     -- remove as a precaution any parameter `web_width`, which should only be respected in the web version.
@@ -65,14 +74,30 @@ if FORMAT:match 'gfm' then
 
         local w = width == "" and "" or ('" width="' .. width)
 
+        -- append "_light"/"_dark" to image filename
+        -- fallback if not local image: use original image path
+        local path, extension = pandoc.path.split_extension(el.src)
+        local light = localfile((path .. "_light" .. extension),  el.src)
+        local dark  = localfile((path .. "_dark"  .. extension),  el.src)
+
         if caption == "" then
             -- Empty caption ("image")
-            return pandoc.RawInline('markdown', '<img src="' .. el.src .. w .. '">')
+            return {
+                pandoc.RawInline('markdown', '<picture>'),
+                pandoc.RawInline('markdown', '<source media="(prefers-color-scheme: light)" srcset="' .. light .. '">'),
+                pandoc.RawInline('markdown', '<source media="(prefers-color-scheme: dark)" srcset="' .. dark .. '">'),
+                pandoc.RawInline('markdown', '<img src="' .. el.src .. w .. '">'),
+                pandoc.RawInline('markdown', '</picture>')
+            }
         else
             -- Non-empty caption ("figure")
             return {
                 pandoc.RawInline('markdown', '<p align="center">'),
+                pandoc.RawInline('markdown', '<picture>'),
+                pandoc.RawInline('markdown', '<source media="(prefers-color-scheme: light)" srcset="' .. light .. '">'),
+                pandoc.RawInline('markdown', '<source media="(prefers-color-scheme: dark)" srcset="' .. dark .. '">'),
                 pandoc.RawInline('markdown', '<img src="' .. el.src .. w .. '">'),
+                pandoc.RawInline('markdown', '</picture>'),
                 pandoc.RawInline('markdown', '</p><p align="center">'),
                 pandoc.Span(caption),
                 pandoc.RawInline('markdown', '</p>'),
