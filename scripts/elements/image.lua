@@ -65,14 +65,28 @@ if FORMAT:match 'gfm' then
 
         local w = width == "" and "" or ('" width="' .. width)
 
+        local path, extension = pandoc.path.split_extension(el.src)
+        local light = path .. "_light" .. extension
+        local dark = path .. "_dark" .. extension
+
         if caption == "" then
             -- Empty caption ("image")
-            return pandoc.RawInline('markdown', '<img src="' .. el.src .. w .. '">')
+            return {
+                pandoc.RawInline('markdown', '<picture>'),
+                pandoc.RawInline('markdown', '<source media="(prefers-color-scheme: light)" srcset="' .. light .. '">'),
+                pandoc.RawInline('markdown', '<source media="(prefers-color-scheme: dark)" srcset="' .. dark .. '">'),
+                pandoc.RawInline('markdown', '<img src="' .. el.src .. w .. '">'),
+                pandoc.RawInline('markdown', '</picture>')
+            }
         else
             -- Non-empty caption ("figure")
             return {
                 pandoc.RawInline('markdown', '<p align="center">'),
+                pandoc.RawInline('markdown', '<picture>'),
+                pandoc.RawInline('markdown', '<source media="(prefers-color-scheme: light)" srcset="' .. light .. '">'),
+                pandoc.RawInline('markdown', '<source media="(prefers-color-scheme: dark)" srcset="' .. dark .. '">'),
                 pandoc.RawInline('markdown', '<img src="' .. el.src .. w .. '">'),
+                pandoc.RawInline('markdown', '</picture>'),
                 pandoc.RawInline('markdown', '</p><p align="center">'),
                 pandoc.Span(caption),
                 pandoc.RawInline('markdown', '</p>'),
