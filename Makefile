@@ -60,9 +60,10 @@ NO_BEAMER              ?=
 OPTIONS                 = --metadata-file=$(METADATA)
 
 
-## Build docker image ("pandoc-thesis") containing pandoc and TeX-Live
+## Fetch docker images
 docker:
-	docker pull pandoc/extra:latest-ubuntu
+	docker pull $(CONTAINER_MIN)
+	docker pull $(CONTAINER_EXT)
 
 
 ## Clean-up: Remove temporary (generated) files
