@@ -18,6 +18,7 @@ local function localfile(name)
     return pandoc.path.is_relative(name) and not name:match('https?://.*') and file_exists(name)
 end
 
+
 if FORMAT:match 'beamer' then
     -- center images without captions too (like "real" images w/ caption aka figures)
     -- remove as a precaution any parameter `web_width`, which should only be respected in the web version.
