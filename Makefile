@@ -94,6 +94,8 @@ PDF_TARGETS             = $(patsubst %.md,$(OUTPUT_DIR)/%.pdf,$(filter-out $(NO_
 BEAMER_TARGETS          = $(patsubst %.md,$(OUTPUT_DIR)/%.pdf,$(filter-out $(NO_BEAMER),$(MARKDOWN_SRC)))
 endif
 
+## find Image Magick
+IMAGEMAGICK            ?= $(or $(shell command -v magick 2>/dev/null),$(shell command -v convert 2>/dev/null))
 
 ## Enable secondary expansion for subsequent targets. This allows the use
 ## of automatic variables like '@' in the prerequisite definitions by
@@ -135,7 +137,7 @@ $(GFM_MARKDOWN_TARGETS):
 	$(PANDOC_MIN) $(OPTIONS)  -M lastmod="$$(git log -n 1 --pretty=reference -- '$<'  |  sed -e 's/["\\$$`]//g' -e "s/'//g")"  $<  -o $@
 
 $(GFM_IMAGE_TARGETS):
-	$(create-dir-and-copy)
+	$(create-dir-and-copy-and-convert)
 
 ## will cover PDF_TARGETS as well as BEAMER_TARGETS
 $(PDF_BEAMER_TARGETS): $$(patsubst $(OUTPUT_DIR)/%.pdf,%.md,$$@)
@@ -153,6 +155,19 @@ define create-dir-and-copy
 $(create-folder)
 cp $< $@
 endef
+
+## Canned recipe for creating output folder and copy output files and converting image files
+ifneq ($(strip $(IMAGEMAGICK)),)
+define create-dir-and-copy-and-convert
+$(create-dir-and-copy)
+$(IMAGEMAGICK)  $<  -background white -alpha remove -alpha off  -strip "$(basename $@)_light$(suffix $@)"
+$(IMAGEMAGICK)  $<  -background white -alpha remove -alpha off -channel RGB -negate +channel  -strip "$(basename $@)_dark$(suffix $@)"
+endef
+else
+define create-dir-and-copy-and-convert
+$(create-dir-and-copy)
+endef
+endif
 
 
 
