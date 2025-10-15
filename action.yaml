@@ -30,6 +30,10 @@ runs:
         cp -r  ${{ github.action_path }}/scripts  ${{ inputs.pandoc_data }}
       shell: bash
 
+    - name: 'Install ImageMagick'
+      run: sudo apt-get clean  &&  sudo apt-get update  &&  sudo apt-get install -y imagemagick
+      shell: bash
+
     - name: 'Compile document(s)'
       run: make  ${{ inputs.mktarget }}  PANDOC_DATA=${{ inputs.pandoc_data }}  METADATA=${{ inputs.metadata }}  OUTPUT_DIR=${{ inputs.publish_dir }}
       shell: bash
