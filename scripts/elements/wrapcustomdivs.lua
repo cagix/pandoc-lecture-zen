@@ -17,7 +17,7 @@ local divs = {
     },
     attachments = {
         quote    = "note",
-        details  = "",
+        details  = " open",
         fontsize = "small",
         icon     = "🖇",
         summary  = "Weitere Unterlagen",
