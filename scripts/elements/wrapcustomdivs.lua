@@ -10,7 +10,7 @@ local divs = {
     },
     youtube = {
         quote    = "tip",
-        details  = "",
+        details  = " open",
         fontsize = "small",
         icon     = "🎦",
         summary  = "Videos",
