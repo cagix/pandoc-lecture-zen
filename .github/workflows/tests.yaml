@@ -1,0 +1,31 @@
+name: TESTS
+on:
+  # push on master branch
+  push:
+    branches: [master]
+  # triggered manually
+  workflow_dispatch:
+  # triggered by pull requests
+  pull_request:
+
+jobs:
+  # run all test scripts
+  test_filter:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: cagix/pandoc-lecture@master
+  test_hugo_lecture:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: cagix/pandoc-lecture@master
+        with:
+          hugo: 'true'
+  test_lecture_slides:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: cagix/pandoc-lecture@master
+        with:
+          texlive: 'true'
