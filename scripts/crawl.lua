@@ -7,16 +7,20 @@ Link-based crawler for local .md files:
 - builds a directory tree preserving insertion order per level
 - file titles are taken from the YAML field `title`
 - directory titles are taken from the YAML field `title` of the README.md
-  in that directory (otherwise "" + warning)
+  in that directory (for the root node: ROOT_README_LABEL (if present))
 - produces:
-    - _sidebar.md (similar to mdBook; per level: files first, then directories;
-                directory entries link to their README if present)
-    - returns, as a “document”, a list of the files (like deps.mk,
-    but directly usable in pipeline operations)
+    - deps.mk (list of files to be used in Makefile as dependencies)
+    - _sidebar.md (to be used in docsify, like mdBook but w/o title/header;
+                per level: files first, then directories; directory entries
+                link to their README if present)
+    - book.md (traverse the tree in dfs order and concatenate all documents,
+               demote header, rewrite local links and image sources)
+- returns result as a "document"
 
 Usage:
+  pandoc  -L crawl.lua     -f markdown -t markdown --wrap=none  -M depsmk   readme.md
+  pandoc  -L crawl.lua     -f markdown -t markdown --wrap=none  -M sidebar  readme.md
   pandoc  -L crawl.lua  -s -f markdown -t markdown --wrap=none  -M book     readme.md
-  pandoc  -L crawl.lua  -s -f markdown -t markdown --wrap=none  -M sidebar  readme.md
 ]]
 
 local system = require 'pandoc.system'
@@ -31,7 +35,7 @@ local log    = require 'pandoc.log'
 -- ==========================
 local README_CANDIDATES = { "readme.md", "README.md", "Readme.md" }
 
--- summary.md, first bullet point:
+-- _sidebar.md, first bullet point:
 -- - nil      : "- [<root-title>](<startfile>)"
 -- - otherwise: "- [<ROOT_README_LABEL>](<startfile>)"
 local ROOT_README_LABEL = "Syllabus"
@@ -302,23 +306,6 @@ local function _walk_tree_files_then_dirs (root, fn)
     _rec(root, 0)
 end
 
--- tree -> flat file list (topic/directory grouping)
--- rule per directory: "files first, then subdirs"
-local function _flatten_tree_files (startnode)
-    local out = {}
-
-    _walk_tree_files_then_dirs(startnode, function (node, depth)
-        if node.kind == "dir" and node.readme_path then
-            table.insert(out, node.readme_path)
-        end
-        if node.kind == "file" then
-            table.insert(out, node.path)
-        end
-    end)
-
-    return out
-end
-
 
 
 -- ==========================
@@ -404,10 +391,36 @@ end
 -- Emitter
 -- ==========================
 
+-- list of dependencies for Makefile
+--[[
+MARKDOWN_SRC := $(shell                         \
+  $(PANDOC_MIN)                                 \
+    -L crawl.lua                                \
+    -f markdown -t plain -M depsmk --wrap=none  \
+    $(ROOT_MD)                                  \
+  )
+]]
+local function _emit_depsmk (root, meta)
+    local inlines = {}
+
+    _walk_tree_files_then_dirs(root, function (node, depth)
+        if node.kind == "dir" and node.readme_path then
+            table.insert(inlines, pandoc.Str(node.readme_path))
+            table.insert(inlines, pandoc.Space())
+        end
+        if node.kind == "file" then
+            table.insert(inlines, pandoc.Str(node.path))
+            table.insert(inlines, pandoc.Space())
+        end
+    end)
+
+    return pandoc.Pandoc(pandoc.Plain(inlines))
+end
+
 -- _sidebar.md (for docsify, like mdBook)
 -- - per level: files first, then dirs (stable within each)
 -- - directory entries link to README if present
-local function _emit_sidebar_md (root)
+local function _emit_sidebar (root)
     local lines = {}
 
     _walk_tree_files_then_dirs(root, function (node, depth)
@@ -431,28 +444,7 @@ local function _emit_sidebar_md (root)
     return pandoc.read(table.concat(lines, "\n") .. "\n", "markdown")
 end
 
--- list of dependencies for Makefile
---[[
-MARKDOWN_SRC := $(shell               \
-  $(PANDOC_MIN)                       \
-    -L crawl.lua                      \
-    -f markdown -t plain --wrap=none  \
-    $(ROOT_MD)                        \
-  )
-]]
-local function _emit_deps_doc_from_tree (root, meta)
-    local order = _flatten_tree_files(root)
-
-    local inlines = {}
-    for _, p in ipairs(order) do
-        table.insert(inlines, pandoc.Str(p))
-        table.insert(inlines, pandoc.Space())
-    end
-
-    return pandoc.Pandoc(pandoc.Plain(inlines))
-end
-
-local function _emit_book_md (root)
+local function _emit_book (root)
     local blocks = pandoc.List()
     local meta = pandoc.List()
 
@@ -521,8 +513,7 @@ function Pandoc (doc)
 
     local tree, _crawl_order = _crawl(startfile)
 
---    _emit_deps_doc_from_tree(tree, doc.meta)
-
-    if doc.meta and doc.meta.sidebar then return _emit_sidebar_md(tree) end
-    if doc.meta and doc.meta.book then return _emit_book_md(tree) end
+    if doc.meta and doc.meta.depsmk then return _emit_depsmk(tree, doc.meta) end
+    if doc.meta and doc.meta.sidebar then return _emit_sidebar(tree) end
+    if doc.meta and doc.meta.book then return _emit_book(tree) end
 end
