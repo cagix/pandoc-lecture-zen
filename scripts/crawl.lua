@@ -11,7 +11,6 @@ Link-based crawler for local .md files:
 - produces:
     - _sidebar.md (similar to mdBook; per level: files first, then directories;
                 directory entries link to their README if present)
-    - _quarto.yml (like summary.md, but suitable for Quarto)
     - deps.mk (Make variable with the list of source files, in tree order)
     - crawl-order.txt (optional, BFS/crawl order)
     - returns, as a “document”, a list of the files (like deps.mk,
@@ -38,13 +37,11 @@ local MK_VAR_NAME       = "MARKDOWN_SRC"
 -- output artifacts (nil to deactivate)
 local OUT_DEPS_MK    = "deps.mk"
 local OUT_ORDER_TXT  = "crawl-order.txt"
-local OUT_QUARTO_YML = "_quarto.yml"
 
 -- summary.md, first bullet point:
 -- - nil      : "- [<root-title>](<startfile>)"
 -- - otherwise: "- [<ROOT_README_LABEL>](<startfile>)"
 local ROOT_README_LABEL = "Syllabus"
-local SUMMARY_TITLE     = "Summary"
 
 
 
@@ -485,70 +482,6 @@ local function _emit_deps_doc_from_tree (root, meta)
     return pandoc.Pandoc(pandoc.Plain(inlines))
 end
 
--- _quarto.yml (for Quarto-Book)
---[[
-project:
-  type: book
-  output-dir: _book
-
-book:
-  title: "<root-title>"
-  chapters:
-    - <root-readme-oder-startfile>
-    - <top-level-files>
-    - part: <dir/readme.md>
-      chapters:
-        - <files in dir>
-]]
--- _emit_quarto_yml (rekursiv, korrekte Einrückung pro Ordner-Ebene)
-local function _emit_quarto_yml (root, startfile)
-    if not OUT_QUARTO_YML then return end
-
-    local lines = {}
-    local book_title = root.title or SUMMARY_TITLE
-
-    table.insert(lines, "project:")
-    table.insert(lines, "  type: book")
-    table.insert(lines, "  output-dir: _book")
-    table.insert(lines, "")
-    table.insert(lines, "book:")
-    table.insert(lines, '  title: "' .. book_title:gsub('"', '\\"') .. '"')
-    table.insert(lines, "  chapters:")
-
-    _walk_tree_files_then_dirs(root, function (node, depth)
-        local indent = string.rep("    ", depth) .. "- "
-
-        -- directory node: create bullet point
-        if node.kind == "dir" then
-            local label = depth == 0 and ROOT_README_LABEL or _label_for_node(node)
-            local entry = node.readme_path and (indent .. "part: " .. node.readme_path)
-                                         or (indent .. "part: \"" .. label .. "\"")
-            if depth == 0 then
-                table.insert(lines, "    - " .. (node.readme_path or label))
-            else
-                table.insert(lines, entry)
-                table.insert(lines, string.rep("    ", depth) .. "  chapters:")
-            end
-        end
-
-        -- file node: create bullet point
-        if node.kind == "file" then
-            local label = _label_for_node(node)
-            table.insert(lines, (indent .. node.path))
-        end
-    end)
-
-    table.insert(lines, "")
-    table.insert(lines, "format:")
-    table.insert(lines, "  html:")
-    table.insert(lines, "    theme:")
-    table.insert(lines, "      light: cosmo")
-    table.insert(lines, "      dark: darkly")
-    table.insert(lines, "    toc: true")
-
-    system.write_file(OUT_QUARTO_YML, table.concat(lines, "\n") .. "\n")
-end
-
 local function _emit_book_md (root)
     local blocks = pandoc.List()
     local meta = pandoc.List()
@@ -620,7 +553,6 @@ function Pandoc (doc)
 
 --    _emit_order_txt(_crawl_order)
 --    _emit_deps_mk_from_tree(tree)
---    _emit_quarto_yml(tree, startfile)
 --    _emit_deps_doc_from_tree(tree, doc.meta)
 
     if doc.meta and doc.meta.sidebar then return _emit_sidebar_md(tree) end
