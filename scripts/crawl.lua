@@ -444,6 +444,23 @@ local function _emit_sidebar (root)
     return pandoc.read(table.concat(lines, "\n") .. "\n", "markdown")
 end
 
+-- book.md
+--[[ TODO: this will not handle footnotes properly :/
+
+move this part to separate filter "book.lua"
+  - depth: #pandoc.split(path), -1: if pandoc.filename(path):toLower == "readme.md"
+  - shift-by: math.max(depth, 1)
+  - add anchor: utils.sha1(path)
+  - set meta.title as first header, level shift-by; ROOT_README_LABEL if depth==0
+  - shift headers by shift-by
+  - image.src: _normalize_local_target(path, el.src)
+  - link.target: "#" .. utils.sha1(_normalize_local_target(path, el.target))
+
+Makefile:
+  DEPS = pandoc -L crawl -M depsmk
+  foreach $(DEPS): transform <file> to build/<file> using book.lua and others (minus citeproc!)
+  pandoc --file-scope --citeproc -s $(DEPS) -o book.md
+]]
 local function _emit_book (root)
     local blocks = pandoc.List()
     local meta = pandoc.List()
