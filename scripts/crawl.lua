@@ -11,7 +11,6 @@ Link-based crawler for local .md files:
 - produces:
     - _sidebar.md (similar to mdBook; per level: files first, then directories;
                 directory entries link to their README if present)
-    - crawl-order.txt (optional, BFS/crawl order)
     - returns, as a “document”, a list of the files (like deps.mk,
     but directly usable in pipeline operations)
 
@@ -31,9 +30,6 @@ local log    = require 'pandoc.log'
 -- Configuration
 -- ==========================
 local README_CANDIDATES = { "readme.md", "README.md", "Readme.md" }
-
--- output artifacts (nil to deactivate)
-local OUT_ORDER_TXT  = "crawl-order.txt"
 
 -- summary.md, first bullet point:
 -- - nil      : "- [<root-title>](<startfile>)"
@@ -407,11 +403,6 @@ end
 -- ==========================
 -- Emitter
 -- ==========================
--- BFS crawl order
-local function _emit_order_txt (order)
-    if not OUT_ORDER_TXT then return end
-    system.write_file(OUT_ORDER_TXT, table.concat(order, "\n") .. "\n")
-end
 
 -- _sidebar.md (for docsify, like mdBook)
 -- - per level: files first, then dirs (stable within each)
@@ -530,7 +521,6 @@ function Pandoc (doc)
 
     local tree, _crawl_order = _crawl(startfile)
 
---    _emit_order_txt(_crawl_order)
 --    _emit_deps_doc_from_tree(tree, doc.meta)
 
     if doc.meta and doc.meta.sidebar then return _emit_sidebar_md(tree) end
