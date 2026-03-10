@@ -161,6 +161,11 @@ local function _get_title_from_doc (doc)
         utils_stringify(doc.meta.title) or ""
 end
 
+-- should this be included for beamer or not
+local function _is_for_beamer (doc)
+    return (doc and doc.meta and not doc.meta.no_beamer)
+end
+
 
 
 -- ==========================
@@ -196,6 +201,7 @@ local function _new_file_node (name, p)
         name = name,
         path = p,
         title = nil,
+        beamer = nil,
     }
 end
 
@@ -389,11 +395,13 @@ local function _crawl (startfile)
         -- parse current exactly once (cacheing parsed documents)
         local doc = _read_doc(current)
         local title = _get_title_from_doc(doc)
+        local beamer = _is_for_beamer(doc)
 
         -- insert into tree (insertion by first-seen)
         local parent, fname, dirchain = _ensure_dir_chain(root, current)
         local leaf = _add_file_leaf(parent, fname, current)
         if leaf.title == nil then leaf.title = title end
+        if leaf.beamer == nil then leaf.beamer = beamer end
 
         -- ensure directory metadata along the path (lazy)
         for _, d in ipairs(dirchain) do
@@ -426,15 +434,7 @@ end
 -- Emitter
 -- ==========================
 
--- list of dependencies for Makefile
---[[
-MARKDOWN_SRC := $(shell                         \
-  $(PANDOC_MIN)                                 \
-    -L crawl.lua                                \
-    -f markdown -t plain -M depsmk --wrap=none  \
-    $(ROOT_MD)                                  \
-  )
-]]
+-- list of Markdown dependencies for Makefile
 local function _emit_depsmk (root, meta)
     local lines = {}
 
@@ -443,6 +443,20 @@ local function _emit_depsmk (root, meta)
             lines[#lines + 1] = node.readme_path
         end
         if node.kind == "file" then
+            lines[#lines + 1] = node.path
+        end
+    end)
+
+    return pandoc.read(table.concat(lines, " ") .. "\n", "markdown")
+end
+
+-- list of Beamer related Markdown dependencies for Makefile
+-- this will ignore any directory readme.md files and any markdown files with `no_beamer: true`
+local function _emit_depsmk_beamer (root, meta)
+    local lines = {}
+
+    _walk_tree_files_then_dirs(root, function (node, depth)
+        if node.kind == "file" and node.beamer then
             lines[#lines + 1] = node.path
         end
     end)
@@ -560,6 +574,7 @@ function Pandoc (doc)
     local tree = _crawl(startfile)
 
     if doc.meta and doc.meta.depsmk then return _emit_depsmk(tree, doc.meta) end
+    if doc.meta and doc.meta.depsmk_beamer then return _emit_depsmk_beamer(tree, doc.meta) end
     if doc.meta and doc.meta.sidebar then return _emit_sidebar(tree) end
     if doc.meta and doc.meta.book then return _emit_book(tree) end
 end
