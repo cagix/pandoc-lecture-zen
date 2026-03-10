@@ -30,13 +30,15 @@ local log    = require 'pandoc.log'
 
 
 
--- cache frequently used path functions locally for performance
-local path_normalize = path.normalize
-local path_split     = path.split
-local path_join      = path.join
-local path_exists    = path.exists
-local path_directory = path.directory
-local path_separator = path.separator
+-- cache frequently used path & utils functions locally for performance
+local path_normalize  = path.normalize
+local path_split      = path.split
+local path_join       = path.join
+local path_exists     = path.exists
+local path_directory  = path.directory
+local path_separator  = path.separator
+local utils_sha1      = utils.sha1
+local utils_stringify = utils.stringify
 
 
 
@@ -155,7 +157,7 @@ end
 -- get metadata title or ""
 local function _get_title_from_doc (doc)
     return (doc and doc.meta and doc.meta.title) and
-        utils.stringify(doc.meta.title) or ""
+        utils_stringify(doc.meta.title) or ""
 end
 
 
@@ -471,28 +473,19 @@ local function _emit_sidebar (root)
 end
 
 -- book.md
---[[ TODO: this will not handle footnotes properly :/
-
-move this part to separate filter "book.lua"
-  - depth: #pandoc.split(path), -1: if pandoc.filename(path):toLower == "readme.md"
-  - shift-by: math.max(depth, 1)
-  - add anchor: utils.sha1(path)
-  - set meta.title as first header, level shift-by; ROOT_README_LABEL if depth==0
-  - shift headers by shift-by
-  - image.src: _normalize_local_target(path, el.src)
-  - link.target: "#" .. utils.sha1(_normalize_local_target(path, el.target))
-
-Makefile:
-  DEPS = pandoc -L crawl -M depsmk
-  foreach $(DEPS): transform <file> to build/<file> using book.lua and others (minus citeproc!)
-  pandoc --file-scope --citeproc -s $(DEPS) -o book.md
-]]
 local function _emit_book (root)
     local blocks = pandoc.List()
     local meta = pandoc.List()
 
+    -- cache per-path anchors to avoid repeated sha1 computation
+    local anchor_cache = {}
+
     local function _anchor (path)
-        return "id-" .. utils.sha1(path)
+        local id = anchor_cache[path]
+        if id then return id end
+        id = "id-" .. utils_sha1(path)
+        anchor_cache[path] = id
+        return id
     end
 
     _walk_tree_files_then_dirs(root, function (node, depth)
@@ -513,17 +506,22 @@ local function _emit_book (root)
             meta.title = pandoc.MetaInlines(_label_for_node(node))
         end
 
+        -- determine the actual file to include (dir -> readme, file -> itself)
         local path = (node.kind == "dir" and node.readme_path) and node.readme_path or nil -- test dir first (readme)
         path = (node.kind == "file" and node.path) and node.path or path                   -- if not dir, test file
         if path then
-            local doc = _read_doc(path).blocks
-            blocks:extend(doc:walk {
+            -- _read_doc uses a global cache, so each file is parsed at most once
+            local doc_blocks = _read_doc(path).blocks
+            blocks:extend(doc_blocks:walk {
                 Header = function(h)
-                    if h.level + eff_depth > 6 then log.warn("level too deep, will vanish " .. h.level .. " => " .. utils.stringify(h.content)) end
+                    if h.level + eff_depth > 6 then
+                        log.warn("level too deep, will vanish " .. h.level .. " => " .. stringify_stringify(h.content))
+                    end
                     h.level = math.min(h.level + eff_depth, 6)
                     return h
                 end,
                 Image = function(el)
+                    -- normalise relative to the original file's directory
                     local t = _normalize_local_target(path, el.src)
                     if t then
                         el.src = t
@@ -531,6 +529,7 @@ local function _emit_book (root)
                     end
                 end,
                 Link = function(el)
+                    -- rewrite links to other markdown files to point to the per-file anchor
                     local t = _normalize_local_target(path, el.target)
                     if t then
                         el.target = "#" .. _anchor(t)
