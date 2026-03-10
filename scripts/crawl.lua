@@ -9,18 +9,18 @@ Link-based crawler for local .md files:
 - directory titles are taken from the YAML field `title` of the README.md
   in that directory (for the root node: ROOT_README_LABEL (if present))
 - produces:
-    - deps.mk (list of files to be used in Makefile as dependencies)
+    - book.md (traverse the tree in dfs order and concatenate all documents,
+                demote header, rewrite local links and image sources)
     - _sidebar.md (to be used in docsify, like mdBook but w/o title/header;
                 per level: files first, then directories; directory entries
                 link to their README if present)
-    - book.md (traverse the tree in dfs order and concatenate all documents,
-               demote header, rewrite local links and image sources)
-- returns result as a "document"
+    - deps.mk (list of files to be used in Makefile as dependencies)
+- returns book.md as a "document", writes _sidebar.md and/or deps.mk directly as file
 
 Usage:
-  pandoc  -L crawl.lua     -f markdown -t markdown --wrap=none  -M depsmk   readme.md
-  pandoc  -L crawl.lua     -f markdown -t markdown --wrap=none  -M sidebar  readme.md
-  pandoc  -L crawl.lua  -s -f markdown -t markdown --wrap=none  -M book     readme.md
+  pandoc  -L crawl.lua  -s --wrap=none -f markdown -t markdown  -M book=true            readme.md -o book.md
+  pandoc  -L crawl.lua  -s --wrap=none -f markdown -t markdown  -M sidebar=_sidebar.md  readme.md > /dev/null
+  pandoc  -L crawl.lua  -s --wrap=none -f markdown -t markdown  -M make.file=deps.mk    readme.md > /dev/null
 ]]
 
 local system = require 'pandoc.system'
@@ -41,6 +41,25 @@ local path_separator   = path.separator
 local utils_sha1       = utils.sha1
 local utils_stringify  = utils.stringify
 
+
+
+-- configuration
+local cfg = {
+    book = {
+        enabled = true,         -- default: emit book
+    },
+    sidebar = {
+        file = nil,             -- default: sidebar disabled
+    },
+    make = {
+        file = nil,             -- default: make disabled
+        vars = {
+            md     = "DEPS_MD",
+            beamer = "DEPS_BEAMER",
+        },
+    },
+
+}
 
 
 -- ==========================
@@ -131,6 +150,12 @@ end
 
 local function _create_md_link (prefix, label, target)
     return prefix .. "[" .. label .. "](" .. target .. ")"
+end
+
+local function _write_string_to_file (filename, strcontent)
+    local f = io.open(filename, 'w')
+    f:write(strcontent)
+    f:close()
 end
 
 
@@ -434,34 +459,35 @@ end
 -- Emitter
 -- ==========================
 
--- list of Markdown dependencies for Makefile
-local function _emit_depsmk (root, meta)
+-- list of dependencies for Makefile
+local function _emit_depsmk (root)
     local lines = {}
 
+    -- list of Markdown dependencies
+    local deps1 = {}
     _walk_tree_files_then_dirs(root, function (node, depth)
         if node.kind == "dir" and node.readme_path then
-            lines[#lines + 1] = node.readme_path
+            deps1[#deps1 + 1] = node.readme_path
         end
         if node.kind == "file" then
-            lines[#lines + 1] = node.path
+            deps1[#deps1 + 1] = node.path
         end
     end)
+    lines[#lines + 1] = cfg.make.vars.md .. " := " .. table.concat(deps1, " ")
 
-    return pandoc.read(table.concat(lines, " ") .. "\n", "markdown")
-end
-
--- list of Beamer related Markdown dependencies for Makefile
--- this will ignore any directory readme.md files and any markdown files with `no_beamer: true`
-local function _emit_depsmk_beamer (root, meta)
-    local lines = {}
-
+    -- list of Beamer related Markdown dependencies for Makefile
+    -- this will ignore any directory readme.md files and any markdown files with `no_beamer: true`
+    local deps2 = {}
     _walk_tree_files_then_dirs(root, function (node, depth)
         if node.kind == "file" and node.beamer then
-            lines[#lines + 1] = node.path
+            deps2[#deps2 + 1] = node.path
         end
     end)
+    lines[#lines + 1] = cfg.make.vars.beamer .. " := " .. table.concat(deps2, " ")
 
-    return pandoc.read(table.concat(lines, " ") .. "\n", "markdown")
+    -- write to Makefile
+    local content = table.concat(lines, "\n") .. "\n"
+    _write_string_to_file(cfg.make.file, content)
 end
 
 -- _sidebar.md (for docsify, like mdBook)
@@ -488,7 +514,7 @@ local function _emit_sidebar (root)
         end
     end)
 
-    return pandoc.read(table.concat(lines, "\n") .. "\n", "markdown")
+    _write_string_to_file(cfg.sidebar.file, table.concat(lines, "\n") .. "\n")
 end
 
 -- book.md
@@ -565,16 +591,45 @@ end
 
 
 -- ==========================
--- Filter Entry Point
+-- Filter Entry Points
 -- ==========================
+function Meta (meta)
+    -- -M book=false  -> disable book output
+    -- -M book=true   -> enable book output
+    if meta["book"] ~= nil then
+        cfg.book.enabled = meta.book
+    end
+
+    -- -M sidebar=_sidebar.md
+    if meta["sidebar"] ~= nil then
+        cfg.sidebar.file = utils_stringify(meta.sidebar)
+    end
+
+    -- -M make.file=deps.mk
+    -- -M make.md=DEPS1
+    -- -M make.beamer=DEPS2
+    if meta["make.file"] ~= nil then
+        cfg.make.file = utils_stringify(meta["make.file"])
+
+        if meta["make.md"] ~= nil then
+            cfg.make.vars.md = utils_stringify(meta["make.md"])
+        end
+        if meta["make.beamer"] ~= nil then
+            cfg.make.vars.beamer = utils_stringify(meta["make.beamer"])
+        end
+    end
+end
+
 function Pandoc (doc)
     local inputs = PANDOC_STATE and PANDOC_STATE.input_files or nil
     local startfile = (inputs and #inputs >= 1) and inputs[1] or README_CANDIDATES[1]
 
     local tree = _crawl(startfile)
 
-    if doc.meta and doc.meta.depsmk then return _emit_depsmk(tree, doc.meta) end
-    if doc.meta and doc.meta.depsmk_beamer then return _emit_depsmk_beamer(tree, doc.meta) end
-    if doc.meta and doc.meta.sidebar then return _emit_sidebar(tree) end
-    if doc.meta and doc.meta.book then return _emit_book(tree) end
+    -- emit to files when configured
+    if cfg.make.file    then _emit_depsmk(tree)  end
+    if cfg.sidebar.file then _emit_sidebar(tree) end
+
+    -- return book as Pandoc document
+    if cfg.book.enabled then return _emit_book(tree) end
 end
