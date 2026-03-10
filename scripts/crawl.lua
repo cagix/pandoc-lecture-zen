@@ -436,20 +436,18 @@ MARKDOWN_SRC := $(shell                         \
   )
 ]]
 local function _emit_depsmk (root, meta)
-    local inlines = {}
+    local lines = {}
 
     _walk_tree_files_then_dirs(root, function (node, depth)
         if node.kind == "dir" and node.readme_path then
-            inlines[#inlines + 1] = pandoc.Str(node.readme_path)
-            inlines[#inlines + 1] = pandoc.Space()
+            lines[#lines + 1] = node.readme_path
         end
         if node.kind == "file" then
-            inlines[#inlines + 1] = pandoc.Str(node.path)
-            inlines[#inlines + 1] = pandoc.Space()
+            lines[#lines + 1] = node.path
         end
     end)
 
-    return pandoc.Pandoc(pandoc.Plain(inlines))
+    return pandoc.read(table.concat(lines, " ") .. "\n", "markdown")
 end
 
 -- _sidebar.md (for docsify, like mdBook)
