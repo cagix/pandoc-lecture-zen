@@ -30,6 +30,16 @@ local log    = require 'pandoc.log'
 
 
 
+-- cache frequently used path functions locally for performance
+local path_normalize = path.normalize
+local path_split     = path.split
+local path_join      = path.join
+local path_exists    = path.exists
+local path_directory = path.directory
+local path_separator = path.separator
+
+
+
 -- ==========================
 -- Configuration
 -- ==========================
@@ -65,28 +75,35 @@ end
 
 -- replace ".." if possible
 local function _normalize_relpath (p)
-    if p == "" then return p end
+    if p == "" or p == nil then return p end
 
     -- Pandoc: remove "./", replace "" by ".", use platform dependent separator
-    p = path.normalize(p)
+    p = path_normalize(p)
 
     -- try to resolve "..":
     -- "a/b/../../foo.md" should become "foo.md"
     -- "../foo.md" would reference file outside the project dir - this would be an error
     local parts = {}
-    for _, part in ipairs(path.split(p)) do
+    local n = 0
+
+    -- explicit stack index avoids repeated length calls and table.remove
+    for _, part in ipairs(path_split(p)) do
         if part == ".." then
-            if #parts > 0 and parts[#parts] ~= ".." then
-                table.remove(parts)
+            if n > 0 and parts[n] ~= ".." then
+                parts[n] = nil
+                n = n - 1
             else
                 error("path contains too many '..': " .. p .. " ... aborting")
             end
-        else
-            table.insert(parts, part)
+        elseif part ~= "." and part ~= "" then
+            n = n + 1
+            parts[n] = part
         end
     end
 
-    return path.normalize(path.join(parts))
+    if n == 0 then return "." end
+
+    return path_join(parts)
 end
 
 -- normalize local (markdown) link target:
@@ -97,8 +114,8 @@ local function _normalize_local_target (basefile, target)
     if not _is_local_link(target) then return nil end
 
     basefile = _normalize_relpath(basefile)
-    local basedir = path.directory(basefile)
-    local joined  = (basedir == "." or basedir == "") and target or path.join({ basedir, target })
+    local basedir = path_directory(basefile)
+    local joined  = (basedir == "." or basedir == "") and target or path_join({ basedir, target })
 
     return _normalize_relpath(joined)
 end
@@ -120,10 +137,18 @@ end
 -- Pandoc helper
 -- ==========================
 
--- parse file into doc
+-- simple in-memory cache of parsed documents; avoids reparsing the same file
+local doc_cache = {}
+
+-- parse file into doc; filepath needs to be normalized
 local function _read_doc (filepath)
+    local cached = doc_cache[filepath]
+    if cached then return cached end
+
     local content = system.read_file(filepath)
     local doc = pandoc.read(content, FORMAT, PANDOC_READER_OPTIONS)
+    doc_cache[filepath] = doc
+
     return doc
 end
 
@@ -151,7 +176,7 @@ local function _new_dir_node (name, p)
     return {
         kind = "dir",
         name = name,
-        path = _normalize_relpath(p),
+        path = p,
         title = nil,
         readme_path = nil,
         meta_done = false,
@@ -164,7 +189,7 @@ local function _new_file_node (name, p)
     return {
         kind = "file",
         name = name,
-        path = _normalize_relpath(p),
+        path = p,
         title = nil,
     }
 end
@@ -193,8 +218,8 @@ local function _compute_dir_meta (dirnode)
     -- search for readme.md
     local found = nil
     for _, rn in ipairs(README_CANDIDATES) do
-        local candidate = path.join({ p, rn })
-        if path.exists(candidate) then
+        local candidate = path_join({ p, rn })
+        if path_exists(candidate) then
             found = candidate
             break
         end
@@ -222,8 +247,10 @@ local function _add_file_leaf (parent, filename, filepath)
 
     -- create a new entry/leaf for filename
     local n = _new_file_node(filename, filepath)
-    table.insert(parent.children, n)
-    parent.child_index[k] = #parent.children
+    local children = parent.children
+    local new_idx = #children + 1
+    children[new_idx] = n
+    parent.child_index[k] = new_idx
     return n
 end
 
@@ -237,15 +264,17 @@ local function _get_or_add_child_dir (parent, dir_name, dir_path)
 
     -- create a new childnode for dir_name
     local n = _new_dir_node(dir_name, dir_path)
-    table.insert(parent.children, n)
-    parent.child_index[k] = #parent.children
+    local children = parent.children
+    local new_idx = #children + 1
+    children[new_idx] = n
+    parent.child_index[k] = new_idx
     return n
 end
 
 -- ensure that all directory nodes along filepath exist
 -- returns: parent_dirnode, leafname, dirchain (list of dirnodes on path)
 local function _ensure_dir_chain (root, filepath)
-    local parts = path.split(filepath) -- last part is filename
+    local parts = path_split(filepath) -- last part is filename
 
     -- just filename
     if #parts == 1 then
@@ -258,11 +287,12 @@ local function _ensure_dir_chain (root, filepath)
     local accum = ""
 
     -- for each part: get child node or create a new node
+    -- use direct concatenation with path_separator to avoid repeated path.join
     for i = 1, (#parts - 1) do
         local name = parts[i]
-        accum = (accum == "") and name or path.join({accum, name})
+        accum = (accum == "") and name or (accum .. path_separator .. name)
         dir = _get_or_add_child_dir(dir, name, accum)
-        table.insert(chain, dir)
+        chain[#chain + 1] = dir
     end
 
     return dir, parts[#parts], chain
@@ -321,9 +351,9 @@ local function _crawl (startfile)
     local queue, qh, qt = {}, 1, 0
     local seen = {}       -- discovered/enqueued
 
+    -- expects already normalised paths; keeps 'seen' in normalised form
     local function _enqueue (p)
         if not p or p == "" then return end
-        p = _normalize_relpath(p)
         if seen[p] then return end
 
         seen[p] = true
@@ -347,7 +377,7 @@ local function _crawl (startfile)
     -- main loop: read next file & extract + enqueue all local markdown links
     local current = _dequeue()
     while current do
-        -- parse current exactly once
+        -- parse current exactly once (cacheing parsed documents)
         local doc = _read_doc(current)
         local title = _get_title_from_doc(doc)
 
@@ -371,8 +401,7 @@ local function _crawl (startfile)
         -- collect links and enqueue in document order
         doc:walk({
             Link = function(el)
-                local p = _normalize_md_target(current, el.target)
-                _enqueue(p)
+                _enqueue(_normalize_md_target(current, el.target))
             end
         })
 
@@ -402,12 +431,12 @@ local function _emit_depsmk (root, meta)
 
     _walk_tree_files_then_dirs(root, function (node, depth)
         if node.kind == "dir" and node.readme_path then
-            table.insert(inlines, pandoc.Str(node.readme_path))
-            table.insert(inlines, pandoc.Space())
+            inlines[#inlines + 1] = pandoc.Str(node.readme_path)
+            inlines[#inlines + 1] = pandoc.Space()
         end
         if node.kind == "file" then
-            table.insert(inlines, pandoc.Str(node.path))
-            table.insert(inlines, pandoc.Space())
+            inlines[#inlines + 1] = pandoc.Str(node.path)
+            inlines[#inlines + 1] = pandoc.Space()
         end
     end)
 
@@ -429,12 +458,12 @@ local function _emit_sidebar (root)
             local label = (depth == 0) and ROOT_README_LABEL or _label_for_node(node)
             local entry = node.readme_path and _create_md_link(indent, label, node.readme_path)
                                          or (indent .. label)
-            table.insert(lines, entry)
+            lines[#lines + 1] = entry
         end
 
         if node.kind == "file" then
             local label = _label_for_node(node)
-            table.insert(lines, _create_md_link(indent, label, node.path))
+            lines[#lines + 1] = _create_md_link(indent, label, node.path)
         end
     end)
 
@@ -523,7 +552,6 @@ end
 function Pandoc (doc)
     local inputs = PANDOC_STATE and PANDOC_STATE.input_files or nil
     local startfile = (inputs and #inputs >= 1) and inputs[1] or README_CANDIDATES[1]
-    startfile = _normalize_relpath(startfile)
 
     local tree = _crawl(startfile)
 
