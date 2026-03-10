@@ -59,6 +59,7 @@ local ROOT_README_LABEL = "Syllabus"
 -- ==========================
 local function _is_local_link (t)
     return t ~= ""
+        and path_is_relative(t)
         and not t:lower():match('https?://.*') -- is not http(s)
 end
 
