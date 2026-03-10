@@ -486,7 +486,7 @@ local function _emit_depsmk (root)
     lines[#lines + 1] = cfg.make.vars.beamer .. " := " .. table.concat(deps2, " ")
 
     -- write to Makefile
-    local content = table.concat(lines, "\n") .. "\n"
+    local content = table.concat(lines, "\n\n") .. "\n"
     _write_string_to_file(cfg.make.file, content)
 end
 
