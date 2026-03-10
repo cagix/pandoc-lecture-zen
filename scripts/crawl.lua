@@ -312,12 +312,10 @@ end
 -- _crawl (BFS)
 -- Returns:
 --   root: tree
---   _crawl_order: local markdown files in BFS _crawl order (deduplicated)
 -- ==========================
 local function _crawl (startfile)
-    -- results: root node of new tree and list of files in _crawl order
+    -- results: root node of new tree
     local root = _new_dir_node("", "")
-    local _crawl_order = {}
 
     -- simulate a simple queue
     local queue, qh, qt = {}, 1, 0
@@ -371,7 +369,6 @@ local function _crawl (startfile)
         end
 
         -- collect links and enqueue in document order
-        table.insert(_crawl_order, current)
         doc:walk({
             Link = function(el)
                 local p = _normalize_md_target(current, el.target)
@@ -382,7 +379,7 @@ local function _crawl (startfile)
         current = _dequeue() -- next path
     end
 
-    return root, _crawl_order
+    return root
 end
 
 
@@ -528,7 +525,7 @@ function Pandoc (doc)
     local startfile = (inputs and #inputs >= 1) and inputs[1] or README_CANDIDATES[1]
     startfile = _normalize_relpath(startfile)
 
-    local tree, _crawl_order = _crawl(startfile)
+    local tree = _crawl(startfile)
 
     if doc.meta and doc.meta.depsmk then return _emit_depsmk(tree, doc.meta) end
     if doc.meta and doc.meta.sidebar then return _emit_sidebar(tree) end
