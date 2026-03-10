@@ -31,14 +31,15 @@ local log    = require 'pandoc.log'
 
 
 -- cache frequently used path & utils functions locally for performance
-local path_normalize  = path.normalize
-local path_split      = path.split
-local path_join       = path.join
-local path_exists     = path.exists
-local path_directory  = path.directory
-local path_separator  = path.separator
-local utils_sha1      = utils.sha1
-local utils_stringify = utils.stringify
+local path_normalize   = path.normalize
+local path_split       = path.split
+local path_join        = path.join
+local path_exists      = path.exists
+local path_is_relative = path.is_relative
+local path_directory   = path.directory
+local path_separator   = path.separator
+local utils_sha1       = utils.sha1
+local utils_stringify  = utils.stringify
 
 
 
@@ -76,6 +77,7 @@ local function _strip_fragment_and_query (t)
 end
 
 -- replace ".." if possible
+-- we assume path 'p' to be a relative path
 local function _normalize_relpath (p)
     if p == "" or p == nil then return p end
 
@@ -108,9 +110,8 @@ local function _normalize_relpath (p)
     return path_join(parts)
 end
 
--- normalize local (markdown) link target:
+-- normalize local (relative) link target:
 -- - ignore remote targets
--- - ignore non-.md targets
 -- - resolve relative targets against basefile directory
 local function _normalize_local_target (basefile, target)
     if not _is_local_link(target) then return nil end
@@ -141,7 +142,8 @@ end
 -- simple in-memory cache of parsed documents; avoids reparsing the same file
 local doc_cache = {}
 
--- parse file into doc; filepath needs to be normalized
+-- parse file into doc
+-- 'filepath' needs to be relative and normalized
 local function _read_doc (filepath)
     local cached = doc_cache[filepath]
     if cached then return cached end
@@ -173,6 +175,8 @@ end
 --
 -- file node:
 -- { kind="file", name="l01.md", path="lecture/topA/l01.md", title=nil|"..."}
+--
+-- 'p' needs to be relative and normalized
 local function _new_dir_node (name, p)
     return {
         kind = "dir",
@@ -239,6 +243,7 @@ local function _compute_dir_meta (dirnode)
 end
 
 -- add new leaf node
+-- 'filepath' needs to be relative and normalized
 local function _add_file_leaf (parent, filename, filepath)
     local k = _file_key(filename)
 
@@ -256,6 +261,7 @@ local function _add_file_leaf (parent, filename, filepath)
 end
 
 -- add new dir node, if not yet existing
+-- 'dir_path' needs to be relative and normalized
 local function _get_or_add_child_dir (parent, dir_name, dir_path)
     local k = _dir_key(dir_name)
 
@@ -274,6 +280,7 @@ end
 
 -- ensure that all directory nodes along filepath exist
 -- returns: parent_dirnode, leafname, dirchain (list of dirnodes on path)
+-- 'filepath' needs to be relative and normalized
 local function _ensure_dir_chain (root, filepath)
     local parts = path_split(filepath) -- last part is filename
 
@@ -353,6 +360,7 @@ local function _crawl (startfile)
     local seen = {}       -- discovered/enqueued
 
     -- expects already normalised paths; keeps 'seen' in normalised form
+    -- 'p' needs to be relative and normalized
     local function _enqueue (p)
         if not p or p == "" then return end
         if seen[p] then return end
