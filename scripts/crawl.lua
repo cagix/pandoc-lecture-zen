@@ -62,7 +62,7 @@ end
 
 local function _is_markdown_file (t)
     return t ~= ""
-        and t:lower():match('.*%.md')  -- is markdown
+        and t:lower():match('%.md$') -- is markdown
 end
 
 local function _is_local_markdown_file_link (t)
