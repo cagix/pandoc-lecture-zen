@@ -519,7 +519,7 @@ local function _emit_book (root)
             local doc = _read_doc(path).blocks
             blocks:extend(doc:walk {
                 Header = function(h)
-                    if h.level + eff_depth > 6 then warn("level too deep, will vanish " .. h.level .. " => " .. utils.stringify(h.content)) end
+                    if h.level + eff_depth > 6 then log.warn("level too deep, will vanish " .. h.level .. " => " .. utils.stringify(h.content)) end
                     h.level = math.min(h.level + eff_depth, 6)
                     return h
                 end,
