@@ -115,7 +115,6 @@ end
 local function _normalize_local_target (basefile, target)
     if not _is_local_link(target) then return nil end
 
-    basefile = _normalize_relpath(basefile)
     local basedir = path_directory(basefile)
     local joined  = (basedir == "." or basedir == "") and target or path_join({ basedir, target })
 
