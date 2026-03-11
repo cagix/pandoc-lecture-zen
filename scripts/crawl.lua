@@ -8,25 +8,33 @@ Link-based crawler for local .md files:
 - file titles are taken from the YAML field `title`
 - directory titles are taken from the YAML field `title` of the README.md
   in that directory (for the root node: ROOT_README_LABEL (if present))
-- produces:
-    - book.md (traverse the tree in dfs order and concatenate all documents,
-                demote header, rewrite local links and image sources)
-    - _sidebar.md (to be used in docsify, like mdBook but w/o title/header;
-                per level: files first, then directories; directory entries
-                link to their README if present)
-    - deps.mk (list of files to be used in Makefile as dependencies)
-- returns book.md as a "document", writes _sidebar.md and/or deps.mk directly as file
+- produces on stdout:
+    - manifest.json (written as plain text JSON to stdout)
+- manifest structure (JSON/Lua):
+    {
+      "root": {
+        "kind": "dir" | "file",
+        "name": "...",
+        "path": "...", -- normalized
+        "title": "...",
+        -- dir only:
+        "readme_path": "..." | null,
+        "children": [ <nodes> ],
+        -- file only:
+        "beamer": true|false,
+        "images": [ "path/to/img", ... ] -- normalized
+      }
+    }
 
 Usage:
-  pandoc  -L crawl.lua  -s --wrap=none -f markdown -t markdown  -M book=true            readme.md -o book.md
-  pandoc  -L crawl.lua  -s --wrap=none -f markdown -t markdown  -M sidebar=_sidebar.md  readme.md > /dev/null
-  pandoc  -L crawl.lua  -s --wrap=none -f markdown -t markdown  -M make.file=deps.mk    readme.md > /dev/null
+  pandoc  -L crawl.lua  --wrap=none -t plain  readme.md  >  manifest.json
 ]]
 
 local system = require 'pandoc.system'
 local utils  = require 'pandoc.utils'
 local path   = require 'pandoc.path'
 local log    = require 'pandoc.log'
+local json   = require 'pandoc.json'
 
 
 
@@ -37,7 +45,6 @@ local path_join        = path.join
 local path_exists      = path.exists
 local path_is_relative = path.is_relative
 local path_directory   = path.directory
-local path_filename    = path.filename
 local path_separator   = path.separator
 local utils_sha1       = utils.sha1
 local utils_stringify  = utils.stringify
@@ -49,23 +56,7 @@ local utils_stringify  = utils.stringify
 -- ==========================
 local README_CANDIDATES = { "readme.md", "README.md", "Readme.md" }
 
--- _sidebar.md, first bullet point:
--- - nil      : "- [<root-title>](<startfile>)"
--- - otherwise: "- [<ROOT_README_LABEL>](<startfile>)"
 local ROOT_README_LABEL = "Syllabus"
-
-local cfg = {
-    book = { enabled = nil, },  -- default: book disabled
-    sidebar = { file = nil, },  -- default: sidebar disabled
-    make = {
-        file = nil,             -- default: make disabled
-        vars = {
-            md     = "DEPS_MD",
-            beamer = "DEPS_BEAMER",
-            images = "DEPS_IMAGE",
-        },
-    },
-}
 
 
 
@@ -143,16 +134,6 @@ local function _normalize_md_target (basefile, target)
     return _normalize_local_target(basefile, target)
 end
 
-local function _create_md_link (prefix, label, target)
-    return prefix .. "[" .. label .. "](" .. target .. ")"
-end
-
-local function _write_string_to_file (filename, strcontent)
-    local f = io.open(filename, 'w')
-    f:write(strcontent)
-    f:close()
-end
-
 
 
 -- ==========================
@@ -169,7 +150,36 @@ local function _read_doc (filepath)
     if cached then return cached end
 
     local content = system.read_file(filepath)
-    local doc = pandoc.read(content, FORMAT, PANDOC_READER_OPTIONS)
+
+    -- TODO: FORMAT ist nur das Output-Format, ohne die Extensions wie "alerts"
+    --[[
+pandoc -L .pandoc/scripts/crawl.lua \
+  -f markdown+smart+four_space_rule-alerts+lists_without_preceding_blankline \
+  -t plain --wrap=none \
+  --metadata=crawl_reader_format:"markdown+smart+four_space_rule-alerts+lists_without_preceding_blankline" \
+  readme.md > manifest.json
+
+local function reader_format_from_meta(meta)
+  local s = meta.crawl_reader_format and pandoc.utils.stringify(meta.crawl_reader_format)
+  if not s or s == "" then
+    -- Fallback: wenigstens "markdown"
+    s = "markdown"
+  end
+  return pandoc.format.from_string(s)
+end
+
+local READ_FORMAT
+
+function Pandoc(doc)
+  READ_FORMAT = reader_format_from_meta(doc.meta)
+  return doc
+end
+
+-- später beim rekursiven Einlesen:
+-- local subdoc = pandoc.read(content, READ_FORMAT, PANDOC_READER_OPTIONS)
+    ]]
+
+    local doc = pandoc.read(content, "markdown", PANDOC_READER_OPTIONS)
     doc_cache[filepath] = doc
 
     return doc
@@ -244,19 +254,6 @@ end
 local function _dir_key (name)  return "dir:" .. name end
 local function _file_key (name) return "file:" .. name end
 
--- helper: is child the same readme.md file as the readme.md in the parent (folder)
-local function _is_readme_child (parent, child)
-    return parent.kind == "dir"
-        and parent.readme_path
-        and child.kind == "file"
-        and child.path == parent.readme_path
-end
-
--- helper: get label for node
-local function _label_for_node (n)
-    return (n.title and n.title ~= "") and n.title or n.name
-end
-
 -- helper: get meta data (title) for dir node
 local function _compute_dir_meta (dirnode)
     local p = dirnode.path
@@ -264,7 +261,7 @@ local function _compute_dir_meta (dirnode)
     -- search for readme.md
     local found = nil
     for _, rn in ipairs(README_CANDIDATES) do
-        local candidate = path_join({ p, rn })
+        local candidate = (p == "" or p == ".") and rn or path_join({ p, rn })
         if path_exists(candidate) then
             found = candidate
             break
@@ -272,7 +269,7 @@ local function _compute_dir_meta (dirnode)
     end
 
     if not found then
-        log.warn("folder w/o README.md: " .. p)
+        log.warn("folder w/o README.md: " .. (p ~= "" and p or "."))
         return { title = "", readme_path = nil }
     end
 
@@ -358,33 +355,6 @@ local function _ensure_dir_meta (dirnode)
     dirnode.meta_done = true
 end
 
--- iterate "files first, then dirs", within each group
-local function _for_children_files_then_dirs (node, fn)
-    if node.kind == "file" then return end
-
-    for _, ch in ipairs(node.children) do
-        if ch.kind == "file" then fn(ch) end
-    end
-
-    for _, ch in ipairs(node.children) do
-        if ch.kind == "dir" then fn(ch) end
-    end
-end
-
--- generic tree traversal: files first, then dirs; skip readme children
-local function _walk_tree_files_then_dirs (root, fn)
-    local function _rec (node, depth)
-        fn(node, depth)
-
-        _for_children_files_then_dirs(node, function (ch)
-            if _is_readme_child(node, ch) then return end -- do not emit readme.md twice
-            _rec(ch, depth + 1)
-        end)
-    end
-
-    _rec(root, 0)
-end
-
 
 
 -- ==========================
@@ -468,163 +438,38 @@ end
 
 
 -- ==========================
--- Emitter
+-- Manifest (JSON) Emitter
 -- ==========================
-
--- list of dependencies for Makefile
-local function _emit_depsmk (root)
-    local lines = {}
-
-    -- list of Markdown dependencies
-    local deps1 = {}
-    _walk_tree_files_then_dirs(root, function (node, depth)
-        if node.kind == "dir" and node.readme_path then
-            deps1[#deps1 + 1] = node.readme_path
-        end
-        if node.kind == "file" then
-            deps1[#deps1 + 1] = node.path
-        end
-    end)
-    lines[#lines + 1] = cfg.make.vars.md .. " := " .. table.concat(deps1, " ")
-
-    -- list of Beamer related Markdown dependencies for Makefile
-    -- this will ignore any directory readme.md files and any markdown files with `no_beamer: true`
-    local deps2 = {}
-    _walk_tree_files_then_dirs(root, function (node, depth)
-        if node.kind == "file" and node.beamer then
-            deps2[#deps2 + 1] = node.path
-        end
-    end)
-    lines[#lines + 1] = cfg.make.vars.beamer .. " := " .. table.concat(deps2, " ")
-
-    -- list of local image dependencies for Makefile, no duplicates
-    local deps3 = {}
-    local seen = {}
-    local function _enqueue (images)
-        for _, p in ipairs(images) do
-            if not seen[p] then
-                seen[p] = true
-                deps3[#deps3 + 1] = p
-            end
-        end
-    end
-    _walk_tree_files_then_dirs(root, function (node, depth)
-        -- get images for directory readme.md
-        if node.kind == "dir" and node.readme_path then
-            local k = _file_key(path_filename(node.readme_path))
-            local idx = node.child_index[k]
-            if idx and node.children[idx].images then
-                _enqueue(node.children[idx].images)
-            end
-        end
-        -- get images for normal files
-        if node.kind == "file" and node.images then
-            _enqueue(node.images)
-        end
-    end)
-    lines[#lines + 1] = cfg.make.vars.images .. " := " .. table.concat(deps3, " ")
-
-    -- write to Makefile
-    local content = table.concat(lines, "\n\n") .. "\n"
-    _write_string_to_file(cfg.make.file, content)
-end
-
--- _sidebar.md (for docsify, like mdBook)
--- - per level: files first, then dirs (stable within each)
--- - directory entries link to README if present
-local function _emit_sidebar (root)
-    local lines = {}
-
-    _walk_tree_files_then_dirs(root, function (node, depth)
-        -- root.readme is depth == 0, we need to treat level 0 and 1 almost equally
-        local eff_depth = math.max(depth, 1) - 1
-        local indent = string.rep("  ", eff_depth) .. "- "
+local function _manifest_as_json_string (root)
+    local function _serialize_node (node)
+        local t = {
+            kind  = node.kind,
+            name  = node.name,
+            path  = node.path,
+            title = node.title,
+        }
 
         if node.kind == "dir" then
-            local label = (depth == 0) and ROOT_README_LABEL or _label_for_node(node)
-            local entry = node.readme_path and _create_md_link(indent, label, node.readme_path)
-                                         or (indent .. label)
-            lines[#lines + 1] = entry
+            t.readme_path = node.readme_path
+            t.children = {}
+            for _, ch in ipairs(node.children) do
+                t.children[#t.children + 1] = _serialize_node(ch)
+            end
         end
 
         if node.kind == "file" then
-            local label = _label_for_node(node)
-            lines[#lines + 1] = _create_md_link(indent, label, node.path)
+            t.beamer = node.beamer
+            t.images = node.images
         end
-    end)
 
-    _write_string_to_file(cfg.sidebar.file, table.concat(lines, "\n") .. "\n")
-end
-
--- book.md
-local function _emit_book (root)
-    local blocks = pandoc.List()
-    local meta = pandoc.List()
-
-    -- cache per-path anchors to avoid repeated sha1 computation
-    local anchor_cache = {}
-
-    local function _anchor (path)
-        local id = anchor_cache[path]
-        if id then return id end
-        id = "id-" .. utils_sha1(path)
-        anchor_cache[path] = id
-        return id
+        return t
     end
 
-    _walk_tree_files_then_dirs(root, function (node, depth)
-        -- root.readme is depth == 0, we need to treat level 0 and 1 almost equally
-        local eff_depth = math.min(math.max(depth, 1), 6)
+    local manifest = {
+        root = _serialize_node(root)
+    }
 
-        -- get header (or ROOT_README_LABEL at depth == 0)
-        local label = depth == 0 and ROOT_README_LABEL or _label_for_node(node)
-        local id = _anchor(node.path)
---        local h = pandoc.Header(eff_depth, label, pandoc.Attr(id)) -- this does not work in docsify :/
-        local h = pandoc.Header(eff_depth, label)
-        local a = pandoc.RawBlock("html", '<a id="' .. id .. '"></a>') -- workaround for docsify: use extra invisible anchors above the header
-        blocks:insert(a)
-        blocks:insert(h)
-
-        -- get title (only at depth == 0)
-        if depth == 0 then
-            meta.title = pandoc.MetaInlines(_label_for_node(node))
-        end
-
-        -- determine the actual file to include (dir -> readme, file -> itself)
-        local path = (node.kind == "dir" and node.readme_path) and node.readme_path or nil -- test dir first (readme)
-        path = (node.kind == "file" and node.path) and node.path or path                   -- if not dir, test file
-        if path then
-            -- _read_doc uses a global cache, so each file is parsed at most once
-            local doc_blocks = _read_doc(path).blocks
-            blocks:extend(doc_blocks:walk {
-                Header = function(h)
-                    if h.level + eff_depth > 6 then
-                        log.warn("level too deep, will vanish " .. h.level .. " => " .. utils_stringify(h.content))
-                    end
-                    h.level = math.min(h.level + eff_depth, 6)
-                    return h
-                end,
-                Image = function(el)
-                    -- normalise relative to the original file's directory
-                    local t = _normalize_local_target(path, el.src)
-                    if t then
-                        el.src = t
-                        return el
-                    end
-                end,
-                Link = function(el)
-                    -- rewrite links to other markdown files to point to the per-file anchor
-                    local t = _normalize_local_target(path, el.target)
-                    if t then
-                        el.target = "#" .. _anchor(t)
-                        return el
-                    end
-                end
-            })
-        end
-    end)
-
-    return pandoc.Pandoc(blocks, meta)
+    return json.encode(manifest) .. "\n"
 end
 
 
@@ -632,47 +477,14 @@ end
 -- ==========================
 -- Filter Entry Points
 -- ==========================
-function Meta (meta)
-    -- -M book=false  -> disable book output
-    -- -M book=true   -> enable book output
-    if meta["book"] ~= nil then
-        cfg.book.enabled = meta.book
-    end
-
-    -- -M sidebar=_sidebar.md
-    if meta["sidebar"] ~= nil then
-        cfg.sidebar.file = utils_stringify(meta.sidebar)
-    end
-
-    -- -M make.file=deps.mk
-    -- -M make.md=DEPS1
-    -- -M make.beamer=DEPS2
-    -- -M make.images=DEPS3
-    if meta["make.file"] ~= nil then
-        cfg.make.file = utils_stringify(meta["make.file"])
-
-        if meta["make.md"] ~= nil then
-            cfg.make.vars.md = utils_stringify(meta["make.md"])
-        end
-        if meta["make.beamer"] ~= nil then
-            cfg.make.vars.beamer = utils_stringify(meta["make.beamer"])
-        end
-        if meta["make.images"] ~= nil then
-            cfg.make.vars.images = utils_stringify(meta["make.images"])
-        end
-    end
-end
-
 function Pandoc (doc)
     local inputs = PANDOC_STATE and PANDOC_STATE.input_files or nil
     local startfile = (inputs and #inputs >= 1) and inputs[1] or README_CANDIDATES[1]
 
     local tree = _crawl(startfile)
 
-    -- emit to files when configured
-    if cfg.make.file    then _emit_depsmk(tree)  end
-    if cfg.sidebar.file then _emit_sidebar(tree) end
+    local json_str = _manifest_as_json_string(tree)
+    local blocks = { pandoc.Plain{ pandoc.Str(json_str) } }
 
-    -- return book as Pandoc document
-    if cfg.book.enabled then return _emit_book(tree) end
+    return pandoc.Pandoc(blocks)
 end
