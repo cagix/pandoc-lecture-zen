@@ -55,7 +55,7 @@ local README_CANDIDATES = { "readme.md", "README.md", "Readme.md" }
 local ROOT_README_LABEL = "Syllabus"
 
 local cfg = {
-    book = { enabled = true, }, -- default: emit book
+    book = { enabled = nil, },  -- default: book disabled
     sidebar = { file = nil, },  -- default: sidebar disabled
     make = {
         file = nil,             -- default: make disabled
