@@ -599,7 +599,7 @@ local function _emit_book (root)
             blocks:extend(doc_blocks:walk {
                 Header = function(h)
                     if h.level + eff_depth > 6 then
-                        log.warn("level too deep, will vanish " .. h.level .. " => " .. stringify_stringify(h.content))
+                        log.warn("level too deep, will vanish " .. h.level .. " => " .. utils_stringify(h.content))
                     end
                     h.level = math.min(h.level + eff_depth, 6)
                     return h
