@@ -37,29 +37,11 @@ local path_join        = path.join
 local path_exists      = path.exists
 local path_is_relative = path.is_relative
 local path_directory   = path.directory
+local path_filename    = path.filename
 local path_separator   = path.separator
 local utils_sha1       = utils.sha1
 local utils_stringify  = utils.stringify
 
-
-
--- configuration
-local cfg = {
-    book = {
-        enabled = true,         -- default: emit book
-    },
-    sidebar = {
-        file = nil,             -- default: sidebar disabled
-    },
-    make = {
-        file = nil,             -- default: make disabled
-        vars = {
-            md     = "DEPS_MD",
-            beamer = "DEPS_BEAMER",
-        },
-    },
-
-}
 
 
 -- ==========================
@@ -71,6 +53,19 @@ local README_CANDIDATES = { "readme.md", "README.md", "Readme.md" }
 -- - nil      : "- [<root-title>](<startfile>)"
 -- - otherwise: "- [<ROOT_README_LABEL>](<startfile>)"
 local ROOT_README_LABEL = "Syllabus"
+
+local cfg = {
+    book = { enabled = true, }, -- default: emit book
+    sidebar = { file = nil, },  -- default: sidebar disabled
+    make = {
+        file = nil,             -- default: make disabled
+        vars = {
+            md     = "DEPS_MD",
+            beamer = "DEPS_BEAMER",
+            images = "DEPS_IMAGE",
+        },
+    },
+}
 
 
 
@@ -191,6 +186,20 @@ local function _is_for_beamer (doc)
     return (doc and doc.meta and not doc.meta.no_beamer)
 end
 
+-- collect local images in document using normalized paths
+-- allow duplicates (for now) since we need to filter duplicates between path/files later anyway
+local function _collect_images (doc, path)
+    local list = {}
+
+    doc:walk({
+        Image = function(el)
+            list[#list+1] = _normalize_local_target(path, el.src)
+        end
+    })
+
+    return list
+end
+
 
 
 -- ==========================
@@ -227,6 +236,7 @@ local function _new_file_node (name, p)
         path = p,
         title = nil,
         beamer = nil,
+        images = nil,
     }
 end
 
@@ -421,12 +431,14 @@ local function _crawl (startfile)
         local doc = _read_doc(current)
         local title = _get_title_from_doc(doc)
         local beamer = _is_for_beamer(doc)
+        local images = _collect_images(doc, current)
 
         -- insert into tree (insertion by first-seen)
         local parent, fname, dirchain = _ensure_dir_chain(root, current)
         local leaf = _add_file_leaf(parent, fname, current)
         if leaf.title == nil then leaf.title = title end
         if leaf.beamer == nil then leaf.beamer = beamer end
+        if leaf.images == nil then leaf.images = images end
 
         -- ensure directory metadata along the path (lazy)
         for _, d in ipairs(dirchain) do
@@ -484,6 +496,33 @@ local function _emit_depsmk (root)
         end
     end)
     lines[#lines + 1] = cfg.make.vars.beamer .. " := " .. table.concat(deps2, " ")
+
+    -- list of local image dependencies for Makefile, no duplicates
+    local deps3 = {}
+    local seen = {}
+    local function _enqueue (images)
+        for _, p in ipairs(images) do
+            if not seen[p] then
+                seen[p] = true
+                deps3[#deps3 + 1] = p
+            end
+        end
+    end
+    _walk_tree_files_then_dirs(root, function (node, depth)
+        -- get images for directory readme.md
+        if node.kind == "dir" and node.readme_path then
+            local k = _file_key(path_filename(node.readme_path))
+            local idx = node.child_index[k]
+            if idx and node.children[idx].images then
+                _enqueue(node.children[idx].images)
+            end
+        end
+        -- get images for normal files
+        if node.kind == "file" and node.images then
+            _enqueue(node.images)
+        end
+    end)
+    lines[#lines + 1] = cfg.make.vars.images .. " := " .. table.concat(deps3, " ")
 
     -- write to Makefile
     local content = table.concat(lines, "\n\n") .. "\n"
@@ -608,6 +647,7 @@ function Meta (meta)
     -- -M make.file=deps.mk
     -- -M make.md=DEPS1
     -- -M make.beamer=DEPS2
+    -- -M make.images=DEPS3
     if meta["make.file"] ~= nil then
         cfg.make.file = utils_stringify(meta["make.file"])
 
@@ -616,6 +656,9 @@ function Meta (meta)
         end
         if meta["make.beamer"] ~= nil then
             cfg.make.vars.beamer = utils_stringify(meta["make.beamer"])
+        end
+        if meta["make.images"] ~= nil then
+            cfg.make.vars.images = utils_stringify(meta["make.images"])
         end
     end
 end
