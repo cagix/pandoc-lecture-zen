@@ -1,0 +1,16 @@
+## Options to parse documents for book
+## (see https://pandoc.org/MANUAL.html#defaults-files)
+
+## general options
+from: markdown+lists_without_preceding_blankline
+to: markdown+smart+four_space_rule-grid_tables-multiline_tables-simple_tables
+
+
+## reader options
+metadata:
+  input-format: markdown+lists_without_preceding_blankline
+
+
+## writer options
+standalone: true
+wrap: none

@@ -672,9 +672,13 @@ function Meta (meta)
 end
 
 function Pandoc (doc)
-    local inputs = PANDOC_STATE and PANDOC_STATE.input_files or nil
-    local startfile = (inputs and #inputs >= 1) and inputs[1] or README_CANDIDATES[1]
+    -- get filename (input file)
+    if not doc.meta.root_doc then
+        error("please set your start document as 'root_doc' metadata")
+    end
+    local startfile = utils_stringify(doc.meta.root_doc)
 
+    -- do the deed ...
     local tree = _crawl(startfile)
 
     -- emit to files when configured
