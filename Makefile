@@ -37,10 +37,10 @@ OUTPUT_DIR             ?= build
 
 
 ## Auxiliary files
-ROOT_DEPS               = make.deps
+ROOT_DEPS               = deps.mk
 
 
-## Markdown sources and GFM target files (to be filled via make.deps target)
+## Markdown sources and GFM target files (to be filled via deps.mk target)
 MARKDOWN_SRC           ?=
 GFM_MARKDOWN_TARGETS   ?=
 GFM_IMAGE_TARGETS      ?=
