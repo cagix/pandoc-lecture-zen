@@ -614,7 +614,7 @@ local function _emit_book (root)
                 end,
                 Link = function(el)
                     -- rewrite links to other markdown files to point to the per-file anchor
-                    local t = _normalize_local_target(path, el.target)
+                    local t = _normalize_md_target(path, el.target)
                     if t then
                         el.target = "#" .. _anchor(t)
                         return el
