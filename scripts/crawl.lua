@@ -584,7 +584,7 @@ local function _emit_book (root)
         local id = _anchor(node.path)
 --        local h = pandoc.Header(eff_depth, label, pandoc.Attr(id)) -- this does not work in docsify :/
         local h = pandoc.Header(eff_depth, label)
-        local a = pandoc.RawBlock("html", '<a id="' .. id .. '"></a>') -- workaround for docsify: use extra invisible anchors above the header
+        local a = pandoc.RawBlock("html", '`<a id="' .. id .. '"></a>`{=markdown}') -- workaround for docsify: use extra invisible anchors above the header
         blocks:insert(a)
         blocks:insert(h)
 
