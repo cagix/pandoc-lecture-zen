@@ -39,14 +39,13 @@ OUTPUT_DIR             ?= build
 
 ## Auxiliary files
 ROOT_DEPS               = deps.mk
+SIDEBAR_SRC             = _sidebar.md
 
 
 ## Markdown sources and GFM target files (to be filled via deps.mk target)
-MARKDOWN_SRC           ?=
-GFM_MARKDOWN_TARGETS   ?=
-GFM_IMAGE_TARGETS      ?=
-NO_PDF                 ?=
-NO_BEAMER              ?=
+DEPS_MD                ?=
+DEPS_IMAGE             ?=
+DEPS_BEAMER            ?=
 
 
 
@@ -69,7 +68,7 @@ docker:
 
 ## Clean-up: Remove temporary (generated) files
 clean:
-	rm -rf $(ROOT_DEPS)
+	rm -rf $(ROOT_DEPS) $(BOOK_SRC) $(SIDEBAR_SRC)
 
 ## Clean-up: Remove also generated gfm-markdown files
 distclean: clean
@@ -85,14 +84,17 @@ distclean: clean
 
 
 $(ROOT_DEPS): $(METADATA)
-	$(PANDOC_MIN)  -L $(PANDOC_DATA)/scripts/makedeps.lua  -M prefix=$(OUTPUT_DIR)  -f markdown -t markdown  $<  -o $@
+	$(PANDOC_MIN)  $(OPTIONS)  -L $(PANDOC_DATA)/scripts/crawl.lua  -d $(PANDOC_DATA)/scripts/book.yaml  -M book=true -M sidebar=$(SIDEBAR_SRC) -M make.file=$(ROOT_DEPS)  $<  -o $(BOOK_SRC)
 
 ## this needs docker/pandoc, so do only include (and build) when required
-ifeq ($(MAKECMDGOALS), $(filter $(MAKECMDGOALS),gfm docsify pdf beamer format))
+ifeq ($(MAKECMDGOALS), $(filter $(MAKECMDGOALS),format gfm docsify beamer pdf))
 -include $(ROOT_DEPS)
-PDF_BEAMER_TARGETS      = $(patsubst %.md,$(OUTPUT_DIR)/%.pdf,$(MARKDOWN_SRC))
-PDF_TARGETS             = $(patsubst %.md,$(OUTPUT_DIR)/%.pdf,$(filter-out $(NO_PDF),$(MARKDOWN_SRC)))
-BEAMER_TARGETS          = $(patsubst %.md,$(OUTPUT_DIR)/%.pdf,$(filter-out $(NO_BEAMER),$(MARKDOWN_SRC)))
+MARKDOWN_TARGETS        = $(patsubst %,$(OUTPUT_DIR)/%,$(DEPS_MD))
+IMAGE_TARGETS           = $(patsubst %,$(OUTPUT_DIR)/%,$(DEPS_IMAGE))
+BEAMER_TARGETS          = $(patsubst %.md,$(OUTPUT_DIR)/%.pdf,$(DEPS_BEAMER))
+BOOK_PDF_TARGET         = $(patsubst %.md,$(OUTPUT_DIR)/%.pdf,$(BOOK_SRC))
+BOOK_MD_TARGET          = $(patsubst %,$(OUTPUT_DIR)/%,$(BOOK_SRC))
+SIDEBAR_TARGET          = $(patsubst %,$(OUTPUT_DIR)/%,$(SIDEBAR_SRC))
 endif
 
 ## find Image Magick
@@ -108,40 +110,49 @@ IMAGEMAGICK            ?= $(or $(shell command -v magick 2>/dev/null),$(shell co
 
 .DEFAULT_GOAL:=help
 
+## Format: move (most of the) YAML headers into the document
+format: OPTIONS         = -d $(PANDOC_DATA)/scripts/format.yaml
+format: $(ROOT_DEPS) $(DEPS_MD)
+	for file in $(DEPS_MD); do \
+		$(PANDOC_MIN) $(OPTIONS) $$file -o $$file; \
+	done
+#	find . -type f -name "*.md" -print0 | xargs -0 -I{} $(PANDOC_MIN) $(OPTIONS) "{}" -o "{}"
 
 ## GFM: Process markdown with pandoc
-gfm: $(ROOT_DEPS) $$(GFM_MARKDOWN_TARGETS) $$(GFM_IMAGE_TARGETS)
+gfm: $(ROOT_DEPS) $$(MARKDOWN_TARGETS) $$(IMAGE_TARGETS)
 gfm: OPTIONS           += -d $(PANDOC_DATA)/scripts/gfm.yaml
 
 ## DOCSIFY: Process markdown with pandoc
-docsify: $(ROOT_DEPS) $$(GFM_MARKDOWN_TARGETS) $$(GFM_IMAGE_TARGETS)
+docsify: $(ROOT_DEPS) $$(MARKDOWN_TARGETS) $$(IMAGE_TARGETS) $(BOOK_MD_TARGET) $(SIDEBAR_TARGET)
 docsify: OPTIONS       += -d $(PANDOC_DATA)/scripts/docsify.yaml
-
-## PDF: Process markdown with pandoc and latex
-pdf: $(ROOT_DEPS) $$(PDF_TARGETS)
-pdf: OPTIONS           += -d $(PANDOC_DATA)/scripts/pdf.yaml
 
 ## Beamer: Process markdown with pandoc and latex
 beamer: $(ROOT_DEPS) $$(BEAMER_TARGETS)
 beamer: OPTIONS        += -d $(PANDOC_DATA)/scripts/beamer.yaml
 
-## Format: move (most of the) YAML headers into the document
-format: OPTIONS         = -d $(PANDOC_DATA)/scripts/format.yaml
-format: $(ROOT_DEPS)
-	for file in $(MARKDOWN_SRC); do \
-		$(PANDOC_MIN) $(OPTIONS) $$file -o $$file; \
-	done
-#	find . -type f -name "*.md" -print0 | xargs -0 -I{} $(PANDOC_MIN) $(OPTIONS) "{}" -o "{}"
+## PDF: Process markdown with pandoc and latex
+pdf: $(ROOT_DEPS) $$(BOOK_PDF_TARGET)
+pdf: OPTIONS           += -d $(PANDOC_DATA)/scripts/pdf.yaml
 
-$(GFM_MARKDOWN_TARGETS):
+$(MARKDOWN_TARGETS): $$(patsubst $(OUTPUT_DIR)/%,%,$$@)
 	$(create-folder)
 	$(PANDOC_MIN) $(OPTIONS)  -M lastmod="$$(git log -n 1 --pretty=reference -- '$<'  |  sed -e 's/["\\$$`]//g' -e "s/'//g")"  $<  -o $@
 
-$(GFM_IMAGE_TARGETS):
-	$(create-dir-and-copy-and-convert)
+$(IMAGE_TARGETS): $$(patsubst $(OUTPUT_DIR)/%,%,$$@)
+	$(create-dir-and-copy)
 
-## will cover PDF_TARGETS as well as BEAMER_TARGETS
-$(PDF_BEAMER_TARGETS): $$(patsubst $(OUTPUT_DIR)/%.pdf,%.md,$$@)
+$(BOOK_MD_TARGET): $(BOOK_SRC)
+	$(create-folder)
+	$(PANDOC_MIN) $(OPTIONS)  -M lastmod="$$(git log -n 1 --pretty=reference -- '$<'  |  sed -e 's/["\\$$`]//g' -e "s/'//g")"  $<  -o $@
+
+$(SIDEBAR_TARGET): $(SIDEBAR_SRC)
+	$(create-dir-and-copy)
+
+$(BEAMER_TARGETS): $$(patsubst $(OUTPUT_DIR)/%.pdf,%.md,$$@)
+	$(create-folder)
+	$(PANDOC_EXT) $(OPTIONS)  -M lastmod="$$(git log -n 1 --pretty=reference -- '$<'  |  sed -e 's/["\\$$`]//g' -e "s/'//g")"  $<  -o $@
+
+$(BOOK_PDF_TARGET): $$(patsubst $(OUTPUT_DIR)/%.pdf,%.md,$$@)
 	$(create-folder)
 	$(PANDOC_EXT) $(OPTIONS)  -M lastmod="$$(git log -n 1 --pretty=reference -- '$<'  |  sed -e 's/["\\$$`]//g' -e "s/'//g")"  $<  -o $@
 
@@ -179,4 +190,4 @@ endif
 ###############################################################################
 
 
-.PHONY: all docker gfm docsify pdf beamer format clean distclean
+.PHONY: all docker clean distclean format gfm docsify beamer pdf
