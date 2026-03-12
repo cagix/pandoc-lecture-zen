@@ -18,9 +18,11 @@ Link-based crawler for local .md files:
 - returns book.md as a "document", writes _sidebar.md and/or deps.mk directly as file
 
 Usage:
-  pandoc  -L crawl.lua  -s --wrap=none -f markdown -t markdown  -M book=true            readme.md -o book.md
-  pandoc  -L crawl.lua  -s --wrap=none -f markdown -t markdown  -M sidebar=_sidebar.md  readme.md > /dev/null
-  pandoc  -L crawl.lua  -s --wrap=none -f markdown -t markdown  -M make.file=deps.mk    readme.md > /dev/null
+  pandoc  -L crawl.lua  -s --wrap=none  -f markdown -t markdown  -M book=true            readme.md -o book.md
+  pandoc  -L crawl.lua  -s --wrap=none  -f markdown -t markdown  -M sidebar=_sidebar.md  readme.md > /dev/null
+  pandoc  -L crawl.lua  -s --wrap=none  -f markdown -t markdown  -M make.file=deps.mk    readme.md > /dev/null
+
+  pandoc  -L crawl.lua  -s --wrap=none  -M input-format=markdown+lists_without_preceding_blankline -t markdown+smart+four_space_rule-grid_tables-multiline_tables-simple_tables  -M book=true -M sidebar=_sidebar.md -M make.file=deps.mk  readme.md -o book.md
 ]]
 
 local system = require 'pandoc.system'
@@ -65,6 +67,7 @@ local cfg = {
             images = "DEPS_IMAGE",
         },
     },
+    input_format = "markdown",  -- to be used for recursive parsing of markdown files
 }
 
 
@@ -169,7 +172,7 @@ local function _read_doc (filepath)
     if cached then return cached end
 
     local content = system.read_file(filepath)
-    local doc = pandoc.read(content, FORMAT, PANDOC_READER_OPTIONS)
+    local doc = pandoc.read(content, cfg.input_format, PANDOC_READER_OPTIONS)
     doc_cache[filepath] = doc
 
     return doc
@@ -660,6 +663,11 @@ function Meta (meta)
         if meta["make.images"] ~= nil then
             cfg.make.vars.images = utils_stringify(meta["make.images"])
         end
+    end
+
+    -- -M input-format=markdown+alerts+lists_without_preceding_blankline
+    if meta["input-format"] ~= nil then
+        cfg.input_format = utils_stringify(meta["input-format"])
     end
 end
 
