@@ -2,7 +2,7 @@
 ## (see https://pandoc.org/MANUAL.html#defaults-files)
 
 ## general options
-from: markdown+lists_without_preceding_blankline+mark+rebase_relative_paths
+from: markdown+lists_without_preceding_blankline+mark
 to: pdf
 
 
@@ -42,6 +42,9 @@ variables:
 
 include-in-header:
   - ${.}/pdf.tex
+
+toc: true
+toc-depth: 3
 
 
 ## options for specific writer
