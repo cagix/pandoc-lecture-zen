@@ -25,6 +25,7 @@ PANDOC_DATA            ?= .pandoc
 ## Source files of your project
 ## (Adjust to your needs.)
 METADATA               ?= lecture.yaml
+BOOK_SRC               ?= book.md
 OUTPUT_DIR             ?= build
 
 
