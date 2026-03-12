@@ -25,7 +25,7 @@ PANDOC_DATA            ?= .pandoc
 ## Source files of your project
 ## (Adjust to your needs.)
 METADATA               ?= lecture.yaml
-OUTPUT_DIR             ?= _gfm
+OUTPUT_DIR             ?= build
 
 
 

@@ -14,7 +14,7 @@ inputs:
     required: true
   publish_dir:
     description: 'Prefix for output'
-    default: '_gfm'
+    default: 'build'
     required: false
 
 runs:

@@ -35,6 +35,7 @@ pdf/
 local.yaml
 /data/readings.yaml
 .pandoc
+build
 make.deps
 _gfm
 _pdf
