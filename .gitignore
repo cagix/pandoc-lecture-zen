@@ -37,8 +37,8 @@ local.yaml
 .pandoc
 build
 deps.mk
-_gfm
-_pdf
+book.md
+_sidebar.md
 
 
 # Packages #
