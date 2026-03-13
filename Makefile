@@ -1,4 +1,3 @@
-
 ###############################################################################
 ## Setup (public)
 ###############################################################################
@@ -100,15 +99,6 @@ endif
 ## find Image Magick
 IMAGEMAGICK            ?= $(or $(shell command -v magick 2>/dev/null),$(shell command -v convert 2>/dev/null))
 
-## Enable secondary expansion for subsequent targets. This allows the use
-## of automatic variables like '@' in the prerequisite definitions by
-## expanding twice (e.g. $$(VAR)). For normal variable references (e.g.
-## $(VAR)) the expansion behaviour is unchanged as the second expansion
-## has no effect on an already fully expanded reference.
-
-.SECONDEXPANSION:
-
-.DEFAULT_GOAL:=help
 
 ## Format: move (most of the) YAML headers into the document
 format: OPTIONS         = -d $(PANDOC_DATA)/scripts/format.yaml
@@ -119,40 +109,29 @@ format: $(ROOT_DEPS) $(DEPS_MD)
 #	find . -type f -name "*.md" -print0 | xargs -0 -I{} $(PANDOC_MIN) $(OPTIONS) "{}" -o "{}"
 
 ## GFM: Process markdown with pandoc
-gfm: $(ROOT_DEPS) $$(MARKDOWN_TARGETS) $$(IMAGE_TARGETS)
+gfm: $(ROOT_DEPS) $(MARKDOWN_TARGETS) $(IMAGE_TARGETS)
 gfm: OPTIONS           += -d $(PANDOC_DATA)/scripts/gfm.yaml
 
 ## DOCSIFY: Process markdown with pandoc
-docsify: $(ROOT_DEPS) $$(MARKDOWN_TARGETS) $$(IMAGE_TARGETS) $(BOOK_MD_TARGET) $(SIDEBAR_TARGET)
+docsify: $(ROOT_DEPS) $(MARKDOWN_TARGETS) $(IMAGE_TARGETS) $(BOOK_MD_TARGET) $(SIDEBAR_TARGET)
 docsify: OPTIONS       += -d $(PANDOC_DATA)/scripts/docsify.yaml
 
 ## Beamer: Process markdown with pandoc and latex
-beamer: $(ROOT_DEPS) $$(BEAMER_TARGETS)
+beamer: $(ROOT_DEPS) $(BEAMER_TARGETS)
 beamer: OPTIONS        += -d $(PANDOC_DATA)/scripts/beamer.yaml
 
 ## PDF: Process markdown with pandoc and latex
-pdf: $(ROOT_DEPS) $$(BOOK_PDF_TARGET)
+pdf: $(ROOT_DEPS) $(BOOK_PDF_TARGET)
 pdf: OPTIONS           += -d $(PANDOC_DATA)/scripts/pdf.yaml
 
-$(MARKDOWN_TARGETS): $$(patsubst $(OUTPUT_DIR)/%,%,$$@)
+$(MARKDOWN_TARGETS) $(BOOK_MD_TARGET): $(OUTPUT_DIR)/%: %
 	$(create-folder)
 	$(PANDOC_MIN) $(OPTIONS)  -M lastmod="$$(git log -n 1 --pretty=reference -- '$<'  |  sed -e 's/["\\$$`]//g' -e "s/'//g")"  $<  -o $@
 
-$(IMAGE_TARGETS): $$(patsubst $(OUTPUT_DIR)/%,%,$$@)
+$(IMAGE_TARGETS) $(SIDEBAR_TARGET): $(OUTPUT_DIR)/%: %
 	$(create-dir-and-copy)
 
-$(BOOK_MD_TARGET): $(BOOK_SRC)
-	$(create-folder)
-	$(PANDOC_MIN) $(OPTIONS)  -M lastmod="$$(git log -n 1 --pretty=reference -- '$<'  |  sed -e 's/["\\$$`]//g' -e "s/'//g")"  $<  -o $@
-
-$(SIDEBAR_TARGET): $(SIDEBAR_SRC)
-	$(create-dir-and-copy)
-
-$(BEAMER_TARGETS): $$(patsubst $(OUTPUT_DIR)/%.pdf,%.md,$$@)
-	$(create-folder)
-	$(PANDOC_EXT) $(OPTIONS)  -M lastmod="$$(git log -n 1 --pretty=reference -- '$<'  |  sed -e 's/["\\$$`]//g' -e "s/'//g")"  $<  -o $@
-
-$(BOOK_PDF_TARGET): $$(patsubst $(OUTPUT_DIR)/%.pdf,%.md,$$@)
+$(BEAMER_TARGETS) $(BOOK_PDF_TARGET): $(OUTPUT_DIR)/%.pdf: %.md
 	$(create-folder)
 	$(PANDOC_EXT) $(OPTIONS)  -M lastmod="$$(git log -n 1 --pretty=reference -- '$<'  |  sed -e 's/["\\$$`]//g' -e "s/'//g")"  $<  -o $@
 
