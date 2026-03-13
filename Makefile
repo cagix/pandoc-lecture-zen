@@ -26,6 +26,7 @@ PANDOC_DATA            ?= .pandoc
 METADATA               ?= lecture.yaml
 BOOK_SRC               ?= book.md
 OUTPUT_DIR             ?= build
+IMAGE_DARK_SUFFIX      ?= _inv
 
 
 
@@ -82,30 +83,31 @@ distclean: clean
 ###############################################################################
 
 
+## crawl and find dependencies
 $(ROOT_DEPS): $(METADATA)
 	$(PANDOC_MIN)  $(OPTIONS)  -L $(PANDOC_DATA)/scripts/crawl.lua  -d $(PANDOC_DATA)/scripts/book.yaml  -M book=true -M sidebar=$(SIDEBAR_SRC) -M make.file=$(ROOT_DEPS)  $<  -o $(BOOK_SRC)
 
 ## this needs docker/pandoc, so do only include (and build) when required
 ifeq ($(MAKECMDGOALS), $(filter $(MAKECMDGOALS),format gfm docsify beamer pdf))
 -include $(ROOT_DEPS)
+
+## already existing inverted images should be included as IMAGE_TARGETS
+DARK_IMAGES            := $(foreach img,$(DEPS_IMAGE), $(if $(wildcard $(basename $(img))$(IMAGE_DARK_SUFFIX)$(suffix $(img))), $(basename $(img))$(IMAGE_DARK_SUFFIX)$(suffix $(img))))
+
+## MARKDOWN derived targets
 MARKDOWN_TARGETS        = $(patsubst %,$(OUTPUT_DIR)/%,$(DEPS_MD))
-IMAGE_TARGETS           = $(patsubst %,$(OUTPUT_DIR)/%,$(DEPS_IMAGE))
+IMAGE_TARGETS           = $(patsubst %,$(OUTPUT_DIR)/%,$(DEPS_IMAGE)) $(patsubst %,$(OUTPUT_DIR)/%,$(DARK_IMAGES))
 BEAMER_TARGETS          = $(patsubst %.md,$(OUTPUT_DIR)/%.pdf,$(DEPS_BEAMER))
 BOOK_PDF_TARGET         = $(patsubst %.md,$(OUTPUT_DIR)/%.pdf,$(BOOK_SRC))
 BOOK_MD_TARGET          = $(patsubst %,$(OUTPUT_DIR)/%,$(BOOK_SRC))
 SIDEBAR_TARGET          = $(patsubst %,$(OUTPUT_DIR)/%,$(SIDEBAR_SRC))
 endif
 
-## find Image Magick
-IMAGEMAGICK            ?= $(or $(shell command -v magick 2>/dev/null),$(shell command -v convert 2>/dev/null))
-
 
 ## Format: move (most of the) YAML headers into the document
 format: OPTIONS         = -d $(PANDOC_DATA)/scripts/format.yaml
 format: $(ROOT_DEPS) $(DEPS_MD)
-	for file in $(DEPS_MD); do \
-		$(PANDOC_MIN) $(OPTIONS) $$file -o $$file; \
-	done
+	for file in $(DEPS_MD); do  $(PANDOC_MIN) $(OPTIONS) $$file -o $$file;  done
 #	find . -type f -name "*.md" -print0 | xargs -0 -I{} $(PANDOC_MIN) $(OPTIONS) "{}" -o "{}"
 
 ## GFM: Process markdown with pandoc
@@ -124,6 +126,8 @@ beamer: OPTIONS        += -d $(PANDOC_DATA)/scripts/beamer.yaml
 pdf: $(ROOT_DEPS) $(BOOK_PDF_TARGET)
 pdf: OPTIONS           += -d $(PANDOC_DATA)/scripts/pdf.yaml
 
+
+## individual transformations
 $(MARKDOWN_TARGETS) $(BOOK_MD_TARGET): $(OUTPUT_DIR)/%: %
 	$(create-folder)
 	$(PANDOC_MIN) $(OPTIONS)  -M lastmod="$$(git log -n 1 --pretty=reference -- '$<'  |  sed -e 's/["\\$$`]//g' -e "s/'//g")"  $<  -o $@
@@ -146,19 +150,6 @@ define create-dir-and-copy
 $(create-folder)
 cp $< $@
 endef
-
-## Canned recipe for creating output folder and copy output files and converting image files
-ifneq ($(strip $(IMAGEMAGICK)),)
-define create-dir-and-copy-and-convert
-$(create-dir-and-copy)
-$(IMAGEMAGICK)  $<  -background white -alpha remove -alpha off  -strip "$(basename $@)_light$(suffix $@)"
-$(IMAGEMAGICK)  $<  -background white -alpha remove -alpha off -channel RGB -negate +channel  -strip "$(basename $@)_dark$(suffix $@)"
-endef
-else
-define create-dir-and-copy-and-convert
-$(create-dir-and-copy)
-endef
-endif
 
 
 
