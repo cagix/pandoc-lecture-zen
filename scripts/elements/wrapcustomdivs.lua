@@ -50,6 +50,13 @@ local divs = {
         icon     = "👀",
         summary  = "Quellen",
     },
+    readings = {
+        quote    = "tip",
+        details  = " open",
+        fontsize = "small",
+        icon     = "📖",
+        summary  = "Zum Nachlesen",
+    },
 }
 
 local function makeQuote(quote, details, summary, content)
@@ -71,12 +78,6 @@ if FORMAT:match 'latex' then
             local defs = divs[env]
             return makeQuote(defs.quote, defs.fontsize, defs.summary, el.content)
         end
-
-        -- handle 'readings' separately
-        if env == "readings" then
-            -- assuming top-level heading: h1, shifting: +1
-            return { pandoc.Header(1, 'Zum Nachlesen') } .. el.content
-        end
     end
 end
 
@@ -86,11 +87,6 @@ if FORMAT:match 'beamer' then
 
         -- handle custom divs
         if divs[env] then
-            return {}
-        end
-
-        -- handle 'readings' separately
-        if env == "readings" then
             return {}
         end
     end
@@ -105,12 +101,6 @@ if (FORMAT:match 'gfm') or (FORMAT:match 'markdown') then
             -- wrap content in "details" div
             local defs = divs[env]
             return makeQuote(defs.quote, defs.details, defs.icon .. " " .. defs.summary, el.content)
-        end
-
-        -- handle 'readings' separately
-        if env == "readings" then
-            -- assuming top-level heading: h1, shifting: +1
-            return { pandoc.Header(1, '📖 Zum Nachlesen') } .. el.content
         end
     end
 end
