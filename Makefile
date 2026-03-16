@@ -113,10 +113,12 @@ format: $(ROOT_DEPS) $(DEPS_MD)
 ## GFM: Process markdown with pandoc
 gfm: $(ROOT_DEPS) $(MARKDOWN_TARGETS) $(IMAGE_TARGETS)
 gfm: OPTIONS           += -d $(PANDOC_DATA)/scripts/gfm.yaml
+gfm: OPTIONS           += -M image_dark_suffix=$(IMAGE_DARK_SUFFIX)
 
 ## DOCSIFY: Process markdown with pandoc
 docsify: $(ROOT_DEPS) $(MARKDOWN_TARGETS) $(IMAGE_TARGETS) $(BOOK_MD_TARGET) $(SIDEBAR_TARGET)
 docsify: OPTIONS       += -d $(PANDOC_DATA)/scripts/docsify.yaml
+docsify: OPTIONS       += -M image_dark_suffix=$(IMAGE_DARK_SUFFIX)
 
 ## Beamer: Process markdown with pandoc and latex
 beamer: $(ROOT_DEPS) $(BEAMER_TARGETS)
