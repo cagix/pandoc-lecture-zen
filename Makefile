@@ -40,6 +40,7 @@ IMAGE_DARK_SUFFIX      ?= _inv
 ## Auxiliary files
 ROOT_DEPS               = deps.mk
 SIDEBAR_SRC             = _sidebar.md
+NAVBAR_SRC              = _navbar.md
 
 
 ## Markdown sources and GFM target files (to be filled via deps.mk target)
@@ -101,6 +102,7 @@ BEAMER_TARGETS          = $(patsubst %.md,$(OUTPUT_DIR)/%.pdf,$(DEPS_BEAMER))
 BOOK_PDF_TARGET         = $(patsubst %.md,$(OUTPUT_DIR)/%.pdf,$(BOOK_SRC))
 BOOK_MD_TARGET          = $(patsubst %,$(OUTPUT_DIR)/%,$(BOOK_SRC))
 SIDEBAR_TARGET          = $(patsubst %,$(OUTPUT_DIR)/%,$(SIDEBAR_SRC))
+NAVBAR_TARGET           = $(patsubst %,$(OUTPUT_DIR)/%,$(NAVBAR_SRC))
 endif
 
 
@@ -116,7 +118,7 @@ gfm: OPTIONS           += -d $(PANDOC_DATA)/scripts/gfm.yaml
 gfm: OPTIONS           += -M image_dark_suffix=$(IMAGE_DARK_SUFFIX)
 
 ## DOCSIFY: Process markdown with pandoc
-docsify: $(ROOT_DEPS) $(MARKDOWN_TARGETS) $(IMAGE_TARGETS) $(BOOK_MD_TARGET) $(SIDEBAR_TARGET)
+docsify: $(ROOT_DEPS) $(MARKDOWN_TARGETS) $(IMAGE_TARGETS) $(BOOK_MD_TARGET) $(SIDEBAR_TARGET) $(NAVBAR_TARGET)
 docsify: OPTIONS       += -d $(PANDOC_DATA)/scripts/docsify.yaml
 docsify: OPTIONS       += -M image_dark_suffix=$(IMAGE_DARK_SUFFIX)
 
@@ -134,7 +136,7 @@ $(MARKDOWN_TARGETS) $(BOOK_MD_TARGET): $(OUTPUT_DIR)/%: %
 	$(create-folder)
 	$(PANDOC_MIN) $(OPTIONS)  -M lastmod="$$(git log -n 1 --pretty=reference -- '$<'  |  sed -e 's/["\\$$`]//g' -e "s/'//g")"  $<  -o $@
 
-$(IMAGE_TARGETS) $(SIDEBAR_TARGET): $(OUTPUT_DIR)/%: %
+$(IMAGE_TARGETS) $(SIDEBAR_TARGET) $(NAVBAR_TARGET): $(OUTPUT_DIR)/%: %
 	$(create-dir-and-copy)
 
 $(BEAMER_TARGETS) $(BOOK_PDF_TARGET): $(OUTPUT_DIR)/%.pdf: %.md
