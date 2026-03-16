@@ -248,7 +248,6 @@ local function _meta (meta)
     -- path/name.extension of current file
     local inputs = PANDOC_STATE and PANDOC_STATE.input_files or nil
     current_file = (inputs and #inputs >= 1) and inputs[1] or ""
-
     if current_file == "" then error("no current file set - this shouldn't happen") end
 end
 
@@ -259,7 +258,7 @@ end
 -- ==========================
 
 function Pandoc (doc)
-    -- config
+    -- read config
     _meta(doc.meta)
 
     -- transform images
