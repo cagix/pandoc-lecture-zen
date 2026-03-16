@@ -43,6 +43,8 @@ local path_filename    = path.filename
 local path_separator   = path.separator
 local utils_sha1       = utils.sha1
 local utils_stringify  = utils.stringify
+local system_read_file = system.read_file
+local log_warn         = log.warn
 
 
 
@@ -70,13 +72,16 @@ local cfg = {
     input_format = "markdown",  -- to be used for recursive parsing of markdown files
 }
 
+local startfile = ""
+
 
 
 -- ==========================
 -- Utilities
 -- ==========================
 local function _is_local_link (t)
-    return t ~= ""
+    return t ~= nil
+        and t ~= ""
         and path_is_relative(t)
         and not t:lower():match('https?://.*') -- is not http(s)
 end
@@ -171,7 +176,7 @@ local function _read_doc (filepath)
     local cached = doc_cache[filepath]
     if cached then return cached end
 
-    local content = system.read_file(filepath)
+    local content = system_read_file(filepath)
     local doc = pandoc.read(content, cfg.input_format, PANDOC_READER_OPTIONS)
     doc_cache[filepath] = doc
 
@@ -275,7 +280,7 @@ local function _compute_dir_meta (dirnode)
     end
 
     if not found then
-        log.warn("folder w/o README.md: " .. p)
+        log_warn("folder w/o README.md: " .. p)
         return { title = "", readme_path = nil }
     end
 
@@ -602,7 +607,7 @@ local function _emit_book (root)
             blocks:extend(doc_blocks:walk {
                 Header = function(h)
                     if h.level + eff_depth > 6 then
-                        log.warn("level too deep, will vanish " .. h.level .. " => " .. utils_stringify(h.content))
+                        log_warn("level too deep, will vanish " .. h.level .. " => " .. utils_stringify(h.content))
                     end
                     h.level = math.min(h.level + eff_depth, 6)
                     return h
@@ -630,12 +635,7 @@ local function _emit_book (root)
     return pandoc.Pandoc(blocks, meta)
 end
 
-
-
--- ==========================
--- Filter Entry Points
--- ==========================
-function Meta (meta)
+local function _meta (meta)
     -- -M book=false  -> disable book output
     -- -M book=true   -> enable book output
     if meta["book"] ~= nil then
@@ -669,14 +669,23 @@ function Meta (meta)
     if meta["input-format"] ~= nil then
         cfg.input_format = utils_stringify(meta["input-format"])
     end
-end
 
-function Pandoc (doc)
     -- get filename (input file)
-    if not doc.meta.root_doc then
+    if not meta.root_doc then
         error("please set your start document as 'root_doc' metadata")
     end
-    local startfile = utils_stringify(doc.meta.root_doc)
+    startfile = utils_stringify(meta.root_doc)
+end
+
+
+
+-- ==========================
+-- Filter Entry Points
+-- ==========================
+
+function Pandoc (doc)
+    -- read config
+    _meta(doc.meta)
 
     -- do the deed ...
     local tree = _crawl(startfile)
