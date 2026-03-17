@@ -4,37 +4,44 @@
 local alerts = {
     note = {
         tex  = "info-box",
-        gfm  = "[!NOTE]",
+        gfm  = "Note",
     },
     tip = {
         tex  = "tip-box",
-        gfm  = "[!TIP]",
+        gfm  = "Tip",
     },
     important = {
         tex  = "important-box",
-        gfm  = "[!IMPORTANT]",
+        gfm  = "Important",
     },
     warning = {
         tex  = "warning-box",
-        gfm  = "[!WARNING]",
+        gfm  = "Warning",
     },
     caution = {
         tex  = "error-box",
-        gfm  = "[!CAUTION]",
+        gfm  = "Caution",
     },
 }
 
 local function makeAlert(type, content)
     if (FORMAT:match 'latex') or (FORMAT:match 'beamer') then
         return {
-                pandoc.RawBlock('latex', '\\begin{' .. type ..'}'),
+                pandoc.RawBlock('latex', '\\begin{' .. alerts[type].tex ..'}'),
                 pandoc.Div(content),
-                pandoc.RawBlock('latex', '\\end{' .. type .. '}')
+                pandoc.RawBlock('latex', '\\end{' .. alerts[type].tex .. '}')
             }
     end
 
     if (FORMAT:match 'gfm') or (FORMAT:match 'markdown') then
-        return pandoc.BlockQuote({pandoc.RawBlock("markdown", type)} .. content)
+        -- do not touch genuine GH alerts
+        -- TODO fix me, this is ugly
+        if not (content and #content > 1 and content[1].t == "Div" and content[1].classes and content[1].classes[1] == "title") then
+            return pandoc.Div(
+                { pandoc.Div(alerts[type].gfm, {class='title'}) } .. content,
+                {class=type}
+            )
+        end
     end
 end
 
@@ -44,7 +51,7 @@ if (FORMAT:match 'latex') or (FORMAT:match 'beamer') then
         local type = el.classes[1]
 
         if alerts[type] then
-            return makeAlert(alerts[type].tex, el.content)
+            return makeAlert(type, el.content)
         end
     end
 end
@@ -56,16 +63,17 @@ if (FORMAT:match 'gfm') or (FORMAT:match 'markdown') then
 
         -- handle these two alerts differently when generating for docsify
         -- docsify: "important" and "caution" not supported in docsify
+        -- TODO should be handled in Docsify 5 (?)
         if FORMAT:match 'markdown' then
             if (type == "important") or (type == "caution") then
-                io.stderr:write("[WARNING]  [ghalerts.lua]  GitHub alert '" .. type .. "' not supported in docsify (replacing w/ quote)\n")
-                return pandoc.BlockQuote(el.content)
+                pandoc.log.warn("GitHub alert '" .. type .. "' not supported in docsify (replacing w/ warning)\n")
+                return makeAlert('warning', el.content)
             end
         end
 
         -- default: emit proper gh alert
         if alerts[type] then
-            return makeAlert(alerts[type].gfm, el.content)
+            return makeAlert(type, el.content)
         end
     end
 end
