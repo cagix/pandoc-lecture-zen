@@ -2,8 +2,8 @@
 ## (see https://pandoc.org/MANUAL.html#defaults-files)
 
 ## general options
-from: markdown+lists_without_preceding_blankline
-to: markdown+smart+four_space_rule-grid_tables-multiline_tables-simple_tables
+from: markdown+alerts+mark+smart+lists_without_preceding_blankline
+to: markdown+alerts+mark+smart+four_space_rule-grid_tables-multiline_tables-simple_tables
 
 
 ## reader options
