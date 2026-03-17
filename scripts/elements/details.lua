@@ -27,6 +27,8 @@ if (FORMAT:match 'gfm') or (FORMAT:match 'markdown') then
         if el.classes[1] == "details" then
             local bl = pandoc.List()
 
+            bl:insert(pandoc.Para(pandoc.Str("")))  -- workaround: the markdown writer would not recognize the gh-alert properly if there isn't plain text at the beginning (see https://github.com/jgm/pandoc/issues/11533)
+
             local options = el.attributes["opt"] and (" " .. el.attributes["opt"]) or ""
             bl:insert(pandoc.RawBlock("markdown", '<details' .. options .. '>'))
 
