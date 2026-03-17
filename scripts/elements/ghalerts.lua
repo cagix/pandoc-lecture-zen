@@ -36,9 +36,10 @@ local function makeAlert(type, content)
     if (FORMAT:match 'gfm') or (FORMAT:match 'markdown') then
         -- do not touch genuine GH alerts
         -- TODO fix me, this is ugly
+        -- workaround: the markdown writer would not recognize the gh-alert properly if there isn't plain text at the beginning (see https://github.com/jgm/pandoc/issues/11533)
         if not (content and #content > 1 and content[1].t == "Div" and content[1].classes and content[1].classes[1] == "title") then
             return pandoc.Div(
-                { pandoc.Div(alerts[type].gfm, {class='title'}) } .. content,
+                { pandoc.Div(alerts[type].gfm, {class='title'}), pandoc.Para(pandoc.Str("")) } .. content,
                 {class=type}
             )
         end
