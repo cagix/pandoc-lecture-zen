@@ -1,23 +1,23 @@
 
--- Custom divs to be handled ('readings' is different)
+-- Custom divs to be handled
 local divs = {
     tldr = {
         quote    = "important",
-        details  = " open",
+        details  = "open",
         fontsize = "small",
         icon     = "🎯",
         summary  = "TL;DR",
     },
     youtube = {
         quote    = "tip",
-        details  = " open",
+        details  = "open",
         fontsize = "small",
         icon     = "🎦",
         summary  = "Videos",
     },
     attachments = {
         quote    = "note",
-        details  = " open",
+        details  = "open",
         fontsize = "small",
         icon     = "🖇",
         summary  = "Weitere Unterlagen",
@@ -52,7 +52,7 @@ local divs = {
     },
     readings = {
         quote    = "tip",
-        details  = " open",
+        details  = "open",
         fontsize = "small",
         icon     = "📖",
         summary  = "Zum Nachlesen",
@@ -72,9 +72,8 @@ if FORMAT:match 'latex' then
     function Div(el)
         local env = el.classes[1]
 
-        -- handle custom divs
+        -- handle custom divs: wrap content in "details" div, use "fontsize" as option for LaTeX
         if divs[env] then
-            -- wrap content in "details" div
             local defs = divs[env]
             return makeQuote(defs.quote, defs.fontsize, defs.summary, el.content)
         end
@@ -85,7 +84,7 @@ if FORMAT:match 'beamer' then
     function Div(el)
         local env = el.classes[1]
 
-        -- handle custom divs
+        -- handle custom divs: remove custom divs entirely
         if divs[env] then
             return {}
         end
@@ -96,9 +95,8 @@ if (FORMAT:match 'gfm') or (FORMAT:match 'markdown') then
     function Div(el)
         local env = el.classes[1]
 
-        -- handle custom divs
+        -- handle custom divs: wrap content in "details" div, use "details" ("open" vs. "") as option for GitHub/Docsify
         if divs[env] then
-            -- wrap content in "details" div
             local defs = divs[env]
             return makeQuote(defs.quote, defs.details, defs.icon .. " " .. defs.summary, el.content)
         end

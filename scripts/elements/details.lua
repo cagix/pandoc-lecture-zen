@@ -27,7 +27,8 @@ if (FORMAT:match 'gfm') or (FORMAT:match 'markdown') then
         if el.classes[1] == "details" then
             local bl = pandoc.List()
 
-            bl:insert(pandoc.RawBlock("markdown", '<details' .. (el.attributes["opt"] or "") .. '>'))
+            local options = el.attributes["opt"] and (" " .. el.attributes["opt"]) or ""
+            bl:insert(pandoc.RawBlock("markdown", '<details' .. options .. '>'))
 
             if el.attributes["title"] then
                 bl:insert(pandoc.RawBlock("markdown", '<summary><strong>' .. el.attributes["title"] .. '</strong></summary>'))
