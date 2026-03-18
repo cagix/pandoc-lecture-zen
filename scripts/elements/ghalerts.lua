@@ -62,16 +62,6 @@ if (FORMAT:match 'gfm') or (FORMAT:match 'markdown') then
     function Div(el)
         local type = el.classes[1]
 
-        -- handle these two alerts differently when generating for docsify
-        -- docsify: "important" and "caution" not supported in docsify
-        -- TODO should be handled in Docsify 5 (?)
-        if FORMAT:match 'markdown' then
-            if (type == "important") or (type == "caution") then
-                pandoc.log.warn("GitHub alert '" .. type .. "' not supported in docsify (replacing w/ warning)\n")
-                return makeAlert('warning', el.content)
-            end
-        end
-
         -- default: emit proper gh alert
         if alerts[type] then
             return makeAlert(type, el.content)
