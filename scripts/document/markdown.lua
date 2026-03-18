@@ -52,6 +52,27 @@ if FORMAT:match 'markdown' then
 end
 
 
+-- TODO: report all relative links in sub-folders (see https://github.com/hibbitts-design/docsify-this/issues/759)
+-- (perhaps in docsify v5 this will be fixed. for the time being we can't use local links in sub-folder in docsify.)
+function Link(el)
+    local function _is_local_link (t)
+        return t ~= nil
+            and t ~= ""
+            and pandoc.path.is_relative(t)
+            and not t:lower():match('https?://.*') -- is not http(s)
+            and t:lower():match('%.md$') ~= nil    -- is markdown
+    end
+
+    local fn = PANDOC_STATE and PANDOC_STATE.input_files or nil
+    fn = (fn and #fn >= 1) and fn[1] or "readme.md"
+
+    if fn:lower() ~= "readme.md" and _is_local_link(el.target) then
+        pandoc.log.warn("link '" .. el.target .. "' in file '" .. fn .. "' will not work in Docsify-This")
+    end
+end
+
+
+
 --- Rework the document (should be done w/ template, but quotes won't work)
 function Pandoc(doc)
     local blocks = pandoc.List()
