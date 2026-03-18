@@ -16,7 +16,7 @@ local divs = {
         summary  = "Videos",
     },
     attachments = {
-        quote    = "note",
+        quote    = "tip",
         details  = "open",
         fontsize = "small",
         icon     = "🖇",
@@ -37,8 +37,8 @@ local divs = {
         summary  = "Quizzes",
     },
     challenges = {
-        quote    = "tip",
-        details  = "",
+        quote    = "important",
+        details  = "open",
         fontsize = "small",
         icon     = "🏅",
         summary  = "Challenges",
