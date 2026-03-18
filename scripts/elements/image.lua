@@ -230,7 +230,7 @@ local function _image (el)
         local width = el.attributes["web_width"]  or  el.attributes["width"]  or  ""
         local caption = utils_stringify(el.caption)
 
-        return pandoc.RawInline('html', _image_to_picture(el.src, width, caption))
+        return pandoc.RawInline('markdown', _image_to_picture(el.src, width, caption))
     end
 end
 
