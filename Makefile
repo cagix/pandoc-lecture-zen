@@ -17,6 +17,12 @@ CONTAINER_EXT           = pandoc/extra:latest-debian
 PANDOC_MIN             ?= docker run --rm --volume "$(WORKDIR):/data" --workdir /data --user $(USRID):$(GRPID) $(CONTAINER_MIN)
 PANDOC_EXT             ?= docker run --rm --volume "$(WORKDIR):/data" --workdir /data --user $(USRID):$(GRPID) $(CONTAINER_EXT)
 
+PANDOC                 ?= $(PANDOC_MIN)
+LATEX_GOALS            := beamer pdf student_materials
+ifneq ($(filter $(LATEX_GOALS),$(MAKECMDGOALS)),)
+PANDOC                 := $(PANDOC_EXT)
+endif
+
 ## Folder containing the Pandoc-Lecture-Zen project
 PANDOC_DATA            ?= .pandoc
 
@@ -91,7 +97,7 @@ ifneq ($(filter-out $(GOALS_NO_DEPS),$(MAKECMDGOALS)),)
 
 ## crawl and find dependencies
 $(ROOT_DEPS): $(METADATA)
-	$(PANDOC_MIN)  $(OPTIONS)  -L $(PANDOC_DATA)/scripts/crawl.lua  -d $(PANDOC_DATA)/scripts/book.yaml  -M book=true -M sidebar=$(SIDEBAR_SRC) -M make.file=$(ROOT_DEPS)  $<  -o $(BOOK_SRC)
+	$(PANDOC)  $(OPTIONS)  -L $(PANDOC_DATA)/scripts/crawl.lua  -d $(PANDOC_DATA)/scripts/book.yaml  -M book=true -M sidebar=$(SIDEBAR_SRC) -M make.file=$(ROOT_DEPS)  $<  -o $(BOOK_SRC)
 
 ## include information from crawling
 -include $(ROOT_DEPS)
@@ -115,8 +121,8 @@ endif
 ## Format: move (most of the) YAML headers into the document
 format: OPTIONS         = -d $(PANDOC_DATA)/scripts/format.yaml
 format: $(ROOT_DEPS) $(DEPS_MD)
-	for file in $(DEPS_MD); do  $(PANDOC_MIN) $(OPTIONS) $$file -o $$file;  done
-#	find . -type f -name "*.md" -print0 | xargs -0 -I{} $(PANDOC_MIN) $(OPTIONS) "{}" -o "{}"
+	for file in $(DEPS_MD); do  $(PANDOC) $(OPTIONS) $$file -o $$file;  done
+#	find . -type f -name "*.md" -print0 | xargs -0 -I{} $(PANDOC) $(OPTIONS) "{}" -o "{}"
 
 ## Student materials
 student_materials: docsify pdf
@@ -138,14 +144,14 @@ pdf: OPTIONS           += -d $(PANDOC_DATA)/scripts/pdf.yaml
 ## individual transformations
 $(MARKDOWN_TARGETS) $(BOOK_MD_TARGET): $(OUTPUT_DIR)/%: %
 	$(create-folder)
-	$(PANDOC_MIN) $(OPTIONS)  -M lastmod="$$(git log -n 1 --pretty=reference -- '$<'  |  sed -e 's/["\\$$`]//g' -e "s/'//g")"  $<  -o $@
+	$(PANDOC) $(OPTIONS)  -M lastmod="$$(git log -n 1 --pretty=reference -- '$<'  |  sed -e 's/["\\$$`]//g' -e "s/'//g")"  $<  -o $@
 
 $(IMAGE_TARGETS) $(SIDEBAR_TARGET) $(NAVBAR_TARGET): $(OUTPUT_DIR)/%: %
 	$(create-dir-and-copy)
 
 $(BEAMER_TARGETS) $(BOOK_PDF_TARGET): $(OUTPUT_DIR)/%.pdf: %.md
 	$(create-folder)
-	$(PANDOC_EXT) $(OPTIONS)  -M lastmod="$$(git log -n 1 --pretty=reference -- '$<'  |  sed -e 's/["\\$$`]//g' -e "s/'//g")"  $<  -o $@
+	$(PANDOC) $(OPTIONS)  -M lastmod="$$(git log -n 1 --pretty=reference -- '$<'  |  sed -e 's/["\\$$`]//g' -e "s/'//g")"  $<  -o $@
 
 
 ## Canned recipe for creating output folder
