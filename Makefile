@@ -84,13 +84,16 @@ distclean: clean
 ###############################################################################
 
 
+## CRAWL
+## crawl.lua needs docker/pandoc, so do only include (and build) when required
+GOALS_NO_DEPS          := clean distclean
+ifneq ($(filter-out $(GOALS_NO_DEPS),$(MAKECMDGOALS)),)
+
 ## crawl and find dependencies
 $(ROOT_DEPS): $(METADATA)
 	$(PANDOC_MIN)  $(OPTIONS)  -L $(PANDOC_DATA)/scripts/crawl.lua  -d $(PANDOC_DATA)/scripts/book.yaml  -M book=true -M sidebar=$(SIDEBAR_SRC) -M make.file=$(ROOT_DEPS)  $<  -o $(BOOK_SRC)
 
-## this needs docker/pandoc, so do only include (and build) when required
-GOALS_NO_DEPS          := clean distclean
-ifneq ($(filter-out $(GOALS_NO_DEPS),$(MAKECMDGOALS)),)
+## include information from crawling
 -include $(ROOT_DEPS)
 
 ## already existing inverted images should be included as IMAGE_TARGETS
@@ -104,7 +107,9 @@ BOOK_PDF_TARGET         = $(patsubst %.md,$(OUTPUT_DIR)/%.pdf,$(BOOK_SRC))
 BOOK_MD_TARGET          = $(patsubst %,$(OUTPUT_DIR)/%,$(BOOK_SRC))
 SIDEBAR_TARGET          = $(patsubst %,$(OUTPUT_DIR)/%,$(SIDEBAR_SRC))
 NAVBAR_TARGET           = $(patsubst %,$(OUTPUT_DIR)/%,$(NAVBAR_SRC))
+
 endif
+## CRAWL
 
 
 ## Format: move (most of the) YAML headers into the document
@@ -163,4 +168,4 @@ endef
 ###############################################################################
 
 
-.PHONY: all docker clean distclean format docsify beamer pdf
+.PHONY: all docker clean distclean format docsify beamer pdf student_materials
