@@ -67,11 +67,11 @@ docker:
 	docker pull $(CONTAINER_EXT)
 
 
-## Clean-up: Remove temporary (generated) files
+## Clean-up: Remove temporary (generated) files in root dir
 clean:
 	rm -rf $(ROOT_DEPS) $(BOOK_SRC) $(SIDEBAR_SRC)
 
-## Clean-up: Remove also generated markdown and pdf files
+## Clean-up: Remove also generated markdown and pdf files (build dir)
 distclean: clean
 	rm -rf $(OUTPUT_DIR)
 
