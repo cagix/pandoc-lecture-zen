@@ -89,7 +89,8 @@ $(ROOT_DEPS): $(METADATA)
 	$(PANDOC_MIN)  $(OPTIONS)  -L $(PANDOC_DATA)/scripts/crawl.lua  -d $(PANDOC_DATA)/scripts/book.yaml  -M book=true -M sidebar=$(SIDEBAR_SRC) -M make.file=$(ROOT_DEPS)  $<  -o $(BOOK_SRC)
 
 ## this needs docker/pandoc, so do only include (and build) when required
-ifeq ($(MAKECMDGOALS), $(filter $(MAKECMDGOALS),format docsify beamer pdf student_materials))
+GOALS_NO_DEPS          := clean distclean
+ifneq ($(filter-out $(GOALS_NO_DEPS),$(MAKECMDGOALS)),)
 -include $(ROOT_DEPS)
 
 ## already existing inverted images should be included as IMAGE_TARGETS
