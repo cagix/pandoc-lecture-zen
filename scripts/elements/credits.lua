@@ -24,7 +24,7 @@ exceptions = {
             if FORMAT:match ('gfm') or (FORMAT:match 'markdown') then
                 return { pandoc.Str("Quelle: ") } .. el.content
             end
-            io.stderr:write("\t (credits) unexpected format: '" .. FORMAT .. "' ... \n")
+            io.stderr:write("[WARNING]  [credits.lua]  unexpected format: '" .. FORMAT .. "' ... \n")
         end
     end,
 
@@ -53,7 +53,7 @@ exceptions = {
                         pandoc.BulletList(bullets)
                     }
                 end
-                io.stderr:write("\t (credits) unexpected format: '" .. FORMAT .. "' ... \n")
+                io.stderr:write("[WARNING]  [credits.lua]  unexpected format: '" .. FORMAT .. "' ... \n")
             else
                 -- nope, nothing ...
                 return {}  -- remove marker anyway

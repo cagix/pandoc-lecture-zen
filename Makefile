@@ -65,6 +65,7 @@ DEPS_BEAMER            ?=
 
 ## Common options
 OPTIONS                 = --metadata-file=$(METADATA)
+OPTIONS                += --quiet
 
 
 ## Fetch docker images

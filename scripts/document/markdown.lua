@@ -67,7 +67,7 @@ function Link(el)
     fn = (fn and #fn >= 1) and fn[1] or "readme.md"
 
     if fn:lower() ~= "readme.md" and _is_local_link(el.target) then
-        pandoc.log.warn("link '" .. el.target .. "' in file '" .. fn .. "' will not work in Docsify-This")
+        io.stderr:write("[WARNING]  [markdown.lua]  link '" .. el.target .. "' in file '" .. fn .. "' will not work in Docsify-This\n")
     end
 end
 

@@ -28,7 +28,6 @@ Usage:
 local system = require 'pandoc.system'
 local utils  = require 'pandoc.utils'
 local path   = require 'pandoc.path'
-local log    = require 'pandoc.log'
 
 
 
@@ -44,7 +43,6 @@ local path_separator   = path.separator
 local utils_sha1       = utils.sha1
 local utils_stringify  = utils.stringify
 local system_read_file = system.read_file
-local log_warn         = log.warn
 
 
 
@@ -280,7 +278,7 @@ local function _compute_dir_meta (dirnode)
     end
 
     if not found then
-        log_warn("folder w/o README.md: " .. p)
+        io.stderr:write("[WARNING]  [crawl.lua]  folder w/o README.md: " .. p .. "\n")
         return { title = "", readme_path = nil }
     end
 
@@ -607,7 +605,7 @@ local function _emit_book (root)
             blocks:extend(doc_blocks:walk {
                 Header = function(h)
                     if h.level + eff_depth > 6 then
-                        log_warn("level too deep, will vanish " .. h.level .. " => " .. utils_stringify(h.content))
+                        io.stderr:write("[WARNING]  [crawl.lua]  level too deep, will vanish " .. h.level .. " => " .. utils_stringify(h.content) .. "\n")
                     end
                     h.level = math.min(h.level + eff_depth, 6)
                     return h
