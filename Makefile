@@ -89,7 +89,7 @@ $(ROOT_DEPS): $(METADATA)
 	$(PANDOC_MIN)  $(OPTIONS)  -L $(PANDOC_DATA)/scripts/crawl.lua  -d $(PANDOC_DATA)/scripts/book.yaml  -M book=true -M sidebar=$(SIDEBAR_SRC) -M make.file=$(ROOT_DEPS)  $<  -o $(BOOK_SRC)
 
 ## this needs docker/pandoc, so do only include (and build) when required
-ifeq ($(MAKECMDGOALS), $(filter $(MAKECMDGOALS),format docsify beamer pdf))
+ifeq ($(MAKECMDGOALS), $(filter $(MAKECMDGOALS),format docsify beamer pdf student_materials))
 -include $(ROOT_DEPS)
 
 ## already existing inverted images should be included as IMAGE_TARGETS
@@ -111,6 +111,9 @@ format: OPTIONS         = -d $(PANDOC_DATA)/scripts/format.yaml
 format: $(ROOT_DEPS) $(DEPS_MD)
 	for file in $(DEPS_MD); do  $(PANDOC_MIN) $(OPTIONS) $$file -o $$file;  done
 #	find . -type f -name "*.md" -print0 | xargs -0 -I{} $(PANDOC_MIN) $(OPTIONS) "{}" -o "{}"
+
+## Student materials
+student_materials: docsify pdf
 
 ## DOCSIFY: Process markdown with pandoc
 docsify: $(ROOT_DEPS) $(MARKDOWN_TARGETS) $(IMAGE_TARGETS) $(BOOK_MD_TARGET) $(SIDEBAR_TARGET) $(NAVBAR_TARGET)
