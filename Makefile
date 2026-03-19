@@ -18,7 +18,7 @@ PANDOC_MIN             ?= docker run --rm --volume "$(WORKDIR):/data" --workdir 
 PANDOC_EXT             ?= docker run --rm --volume "$(WORKDIR):/data" --workdir /data --user $(USRID):$(GRPID) $(CONTAINER_EXT)
 
 PANDOC                 ?= $(PANDOC_MIN)
-LATEX_GOALS            := beamer pdf student_materials
+LATEX_GOALS            := beamer pdf handout
 ifneq ($(filter $(LATEX_GOALS),$(MAKECMDGOALS)),)
 PANDOC                 := $(PANDOC_EXT)
 endif
@@ -126,7 +126,7 @@ format: $(ROOT_DEPS) $(DEPS_MD)
 #	find . -type f -name "*.md" -print0 | xargs -0 -I{} $(PANDOC) $(OPTIONS) "{}" -o "{}"
 
 ## Student materials
-student_materials: docsify pdf
+handout: docsify pdf
 
 ## DOCSIFY: Process markdown with pandoc
 docsify: $(ROOT_DEPS) $(MARKDOWN_TARGETS) $(IMAGE_TARGETS) $(BOOK_MD_TARGET) $(SIDEBAR_TARGET) $(NAVBAR_TARGET)
@@ -175,4 +175,4 @@ endef
 ###############################################################################
 
 
-.PHONY: all docker clean distclean format docsify beamer pdf student_materials
+.PHONY: all docker clean distclean format docsify beamer pdf handout
