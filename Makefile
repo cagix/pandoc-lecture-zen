@@ -59,6 +59,21 @@ DEPS_BEAMER            ?=
 
 
 ###############################################################################
+## Git / Lastmod helpers
+###############################################################################
+
+## Last commit in repo
+LAST_REPO_COMMIT       := $(shell git log -n 1 --pretty=format:%h\ %ad\ %s 2>/dev/null  ||  echo "unversioned")
+
+## Make-"function": last commit for an individual file, fallback to last commit in repo
+## call in receipes: $(call lastmod_file,$<)
+lastmod_file            = $$( git log -n 1 --pretty=format:%h\ %ad\ %s -- '$(1)' 2>/dev/null  ||  echo '$(LAST_REPO_COMMIT)' )
+
+
+
+
+
+###############################################################################
 ## Main targets (do not change)
 ###############################################################################
 
@@ -143,16 +158,24 @@ pdf: OPTIONS           += -d $(PANDOC_DATA)/scripts/pdf.yaml
 
 
 ## individual transformations
-$(MARKDOWN_TARGETS) $(BOOK_MD_TARGET): $(OUTPUT_DIR)/%: %
+$(MARKDOWN_TARGETS): $(OUTPUT_DIR)/%: %
 	$(create-folder)
-	$(PANDOC) $(OPTIONS)  -M lastmod="$$(git log -n 1 --pretty=reference -- '$<'  |  sed -e 's/["\\$$`]//g' -e "s/'//g")"  $<  -o $@
+	$(PANDOC) $(OPTIONS)  -M lastmod="$(call lastmod_file,$<)"  $<  -o $@
+
+$(BOOK_MD_TARGET): $(OUTPUT_DIR)/%: %
+	$(create-folder)
+	$(PANDOC) $(OPTIONS)  -M lastmod="$(LAST_REPO_COMMIT)"  $<  -o $@
 
 $(IMAGE_TARGETS) $(SIDEBAR_TARGET) $(NAVBAR_TARGET): $(OUTPUT_DIR)/%: %
 	$(create-dir-and-copy)
 
-$(BEAMER_TARGETS) $(BOOK_PDF_TARGET): $(OUTPUT_DIR)/%.pdf: %.md
+$(BEAMER_TARGETS): $(OUTPUT_DIR)/%.pdf: %.md
 	$(create-folder)
-	$(PANDOC) $(OPTIONS)  -M lastmod="$$(git log -n 1 --pretty=reference -- '$<'  |  sed -e 's/["\\$$`]//g' -e "s/'//g")"  $<  -o $@
+	$(PANDOC) $(OPTIONS)  -M lastmod="$(call lastmod_file,$<)"  $<  -o $@
+
+$(BOOK_PDF_TARGET): $(OUTPUT_DIR)/%.pdf: %.md
+	$(create-folder)
+	$(PANDOC) $(OPTIONS)  -M lastmod="$(LAST_REPO_COMMIT)"  $<  -o $@
 
 
 ## Canned recipe for creating output folder
