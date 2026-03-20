@@ -20,16 +20,24 @@ function DefinitionList(el)
 end
 
 
--- Remove TeX commands - won't be automatically removed for markdown target format
+-- Handle raw inline/blocks:
+-- - remove raw LaTeX (i.e., commands) - won't be automatically removed for markdown target format
+-- - rebrand raw HTML to raw Markdown when emitting markdown for docsify: from `...`{=html} to `...`{=markdown} and eventually just ...
 function RawInline(el)
     if el.format == "tex" or el.format == "latex" then
         return {}
+    end
+    if el.format == "html" then
+        return pandoc.RawInline("markdown", el.text)
     end
 end
 
 function RawBlock(el)
     if el.format == "tex" or el.format == "latex" then
         return {}
+    end
+    if el.format == "html" then
+        return pandoc.RawBlock("markdown", el.text)
     end
 end
 
