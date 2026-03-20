@@ -604,10 +604,18 @@ local function _emit_book (root)
             local doc_blocks = _read_doc(path).blocks
             blocks:extend(doc_blocks:walk {
                 Header = function(h)
-                    if h.level + eff_depth > 6 then
-                        io.stderr:write("[WARNING]  [crawl.lua]  level too deep, will vanish " .. h.level .. " => " .. utils_stringify(h.content) .. "\n")
+                    local curr_level = h.level
+                    local wannabe_new_level = curr_level + eff_depth
+                    local new_level  = math.min(wannabe_new_level, 6)
+                    if wannabe_new_level == 6 then
+                        -- level 6 headings will vanish with "--shift-heading-level-by=1" in the next step
+                        io.stderr:write("[WARNING]  [crawl.lua]  heading will vanish with --shift-heading-level-by=1: h" .. curr_level .. " => h" .. wannabe_new_level .. " (" .. utils_stringify(h.content) .. ")\n")
                     end
-                    h.level = math.min(h.level + eff_depth, 6)
+                    if wannabe_new_level > 6 then
+                        -- markdown allows level 6 headings max
+                        io.stderr:write("[WARNING]  [crawl.lua]  heading exceeds max level, cut back to h6: h" .. curr_level .. " => h" .. wannabe_new_level .. " (" .. utils_stringify(h.content) .. ")\n")
+                    end
+                    h.level = new_level
                     return h
                 end,
                 Image = function(el)
