@@ -3,24 +3,24 @@
 -- GH Alerts to be handled
 local alerts = {
     note = {
-        tex  = "info-box",
-        gfm  = "Note",
+        tex = "info-box",
+        md  = "Note",
     },
     tip = {
-        tex  = "tip-box",
-        gfm  = "Tip",
+        tex = "tip-box",
+        md  = "Tip",
     },
     important = {
-        tex  = "important-box",
-        gfm  = "Important",
+        tex = "important-box",
+        md  = "Important",
     },
     warning = {
-        tex  = "warning-box",
-        gfm  = "Warning",
+        tex = "warning-box",
+        md  = "Warning",
     },
     caution = {
-        tex  = "error-box",
-        gfm  = "Caution",
+        tex = "error-box",
+        md  = "Caution",
     },
 }
 
@@ -33,13 +33,13 @@ local function makeAlert(type, content)
             }
     end
 
-    if (FORMAT:match 'gfm') or (FORMAT:match 'markdown') then
+    if FORMAT:match 'markdown' then
         -- do not touch genuine GH alerts
         -- TODO fix me: recognition of genuine GH alerts is quite hacky
         -- TODO workaround: the markdown writer would not recognize the gh-alert properly if there isn't plain text at the beginning (see https://github.com/jgm/pandoc/issues/11533)
         if not (content and #content > 1 and content[1].t == "Div" and content[1].classes and content[1].classes[1] == "title") then
             return pandoc.Div(
-                { pandoc.Div(alerts[type].gfm, {class='title'}), pandoc.Para(pandoc.Str("")) } .. content,
+                { pandoc.Div(alerts[type].md, {class='title'}), pandoc.Para(pandoc.Str("")) } .. content,
                 {class=type}
             )
         end
@@ -58,7 +58,7 @@ if (FORMAT:match 'latex') or (FORMAT:match 'beamer') then
 end
 
 
-if (FORMAT:match 'gfm') or (FORMAT:match 'markdown') then
+if FORMAT:match 'markdown' then
     function Div(el)
         local type = el.classes[1]
 

@@ -1,22 +1,22 @@
--- "Template" for GFM and Docsify
+-- "Template" for Docsify
 
 function Div(el)
     local env = el.classes[1]
 
     -- remove columns, but keep content
     if env == "columns" then
-        io.stderr:write("[WARNING]  [markdown.lua]  columns are not really supported in docsify/gfm\n")
+        io.stderr:write("[WARNING]  [markdown.lua]  columns are not really supported in docsify\n")
         return el.content
     end
     if env == "column" then
-        io.stderr:write("[WARNING]  [markdown.lua]  columns are not really supported in docsify/gfm\n")
+        io.stderr:write("[WARNING]  [markdown.lua]  columns are not really supported in docsify\n")
         return el.content
     end
 end
 
 
 function DefinitionList(el)
-    io.stderr:write("[WARNING]  [markdown.lua]  definition lists are not really supported in docsify/gfm\n")
+    io.stderr:write("[WARNING]  [markdown.lua]  definition lists are not really supported in docsify\n")
 end
 
 

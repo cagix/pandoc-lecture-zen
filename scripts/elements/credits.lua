@@ -21,7 +21,7 @@ exceptions = {
                     pandoc.RawInline('latex', '}')
                 }
             end
-            if FORMAT:match ('gfm') or (FORMAT:match 'markdown') then
+            if FORMAT:match 'markdown' then
                 return { pandoc.Str("Quelle: ") } .. el.content
             end
             io.stderr:write("[WARNING]  [credits.lua]  unexpected format: '" .. FORMAT .. "' ... \n")
@@ -47,7 +47,7 @@ exceptions = {
                         pandoc.BulletList(bullets)
                     }
                 end
-                if FORMAT:match ('gfm') or (FORMAT:match 'markdown') then
+                if FORMAT:match 'markdown' then
                     return {
                         pandoc.Plain(pandoc.Strong('Exceptions:')),
                         pandoc.BulletList(bullets)

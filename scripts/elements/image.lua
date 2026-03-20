@@ -8,7 +8,7 @@ Image-centric Pandoc Lua filter for Markdown-to-Markdown transformations:
 - when metadata `image_dark_suffix` is set, checks for `path/image_suffix.png` beside a local image
   and, if present, emits a `<picture>` instead of `<img>` with a dark-mode source; non-local images are not checked
 - for Beamer format, centers all images
-- to be invoked with implicit_figures disabled for markdown/gfm: `from: markdown-implicit_figures`
+- to be invoked with implicit_figures disabled for markdown: `from: markdown-implicit_figures`
 ]]
 
 local utils  = require 'pandoc.utils'
@@ -221,7 +221,7 @@ local function _image (el)
         }
     end
 
-    if FORMAT:match 'gfm' or FORMAT:match 'markdown' then
+    if FORMAT:match 'markdown' then
         -- If "width" or "web_width" parameters are present, emit raw `<img src=... width=...>` instead of pandoc.Image,
         -- because this would result in `<img src=... style="width:...">` - and GitHub unfortunately would filter all
         -- "style" parameters. This way GitHub preview will respect the given width parameter (for now).

@@ -91,7 +91,7 @@ if FORMAT:match 'beamer' then
     end
 end
 
-if (FORMAT:match 'gfm') or (FORMAT:match 'markdown') then
+if FORMAT:match 'markdown' then
     function Div(el)
         local env = el.classes[1]
 

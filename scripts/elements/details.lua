@@ -21,7 +21,7 @@ if (FORMAT:match 'latex') or (FORMAT:match 'beamer') then
 end
 
 
-if (FORMAT:match 'gfm') or (FORMAT:match 'markdown') then
+if FORMAT:match 'markdown' then
     function Div(el)
         -- Replace "details" Div with <details>
         if el.classes[1] == "details" then
