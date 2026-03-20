@@ -52,23 +52,31 @@ if FORMAT:match 'markdown' then
 end
 
 
--- TODO: report all relative links in sub-folders (see https://github.com/hibbitts-design/docsify-this/issues/759)
--- (perhaps in docsify v5 this will be fixed. for the time being we can't use local links in sub-folder in docsify.)
+-- TODO: links using relative paths need some extra care for docsify (see https://github.com/hibbitts-design/docsify-this/issues/759)
+-- (a) relative links to files on same folder level need an extra `./` prefix
+-- (b) add an extra `&relative-paths=true` to the generated docify-this url
+-- (perhaps this will be fixed in docsify v5.)
 function Link(el)
     local function _is_local_link (t)
-        return t ~= nil
-            and t ~= ""
-            and pandoc.path.is_relative(t)
-            and not t:lower():match('https?://.*') -- is not http(s)
-            and t:lower():match('%.md$') ~= nil    -- is markdown
+        return pandoc.path.is_relative(t)
+            and not t:lower():match('^https?://') -- is not http(s)
+            and not t:lower():match('^#')         -- is not internal link (anchor)
+            and t:lower():match('%.md$') ~= nil   -- is markdown file
     end
 
-    local fn = PANDOC_STATE and PANDOC_STATE.input_files or nil
-    fn = (fn and #fn >= 1) and fn[1] or "readme.md"
-
-    if fn:lower() ~= "readme.md" and _is_local_link(el.target) then
-        io.stderr:write("[WARNING]  [markdown.lua]  link '" .. el.target .. "' in file '" .. fn .. "' will not work in Docsify-This\n")
+    local src = el.target
+    if src == nil or src == "" or src == "." then
+        el.target = "."
+        io.stderr:write("[WARNING]  [markdown.lua]  detected relative link to file on same folder level: '" .. el.target .. "' => add extra '&relative-paths=true' to generated docify-this url\n")
+    else
+        local path_components = pandoc.path.split(src)
+        if #path_components == 1 and _is_local_link(src) then
+            el.target = pandoc.path.join({ ".", src})
+            io.stderr:write("[WARNING]  [markdown.lua]  detected relative link to file on same folder level: '" .. el.target .. "' => add extra '&relative-paths=true' to generated docify-this url\n")
+        end
     end
+
+    return el
 end
 
 
