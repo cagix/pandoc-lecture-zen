@@ -31,7 +31,7 @@ PANDOC_DATA            ?= .pandoc
 ## (Adjust to your needs.)
 METADATA               ?= lecture.yaml
 BOOK_SRC               ?= book.md
-OUTPUT_DIR             ?= build
+BUILD_DIR              ?= build
 IMAGE_DARK_SUFFIX      ?= _inv
 
 
@@ -95,7 +95,7 @@ clean:
 
 ## Clean-up: Remove also generated markdown and pdf files (build dir)
 distclean: clean
-	rm -rf $(OUTPUT_DIR)
+	rm -rf $(BUILD_DIR)
 
 
 
@@ -122,13 +122,13 @@ $(ROOT_DEPS): $(METADATA)
 DARK_IMAGES            := $(foreach img,$(DEPS_IMAGE), $(if $(wildcard $(basename $(img))$(IMAGE_DARK_SUFFIX)$(suffix $(img))), $(basename $(img))$(IMAGE_DARK_SUFFIX)$(suffix $(img))))
 
 ## MARKDOWN derived targets
-MARKDOWN_TARGETS        = $(patsubst %,$(OUTPUT_DIR)/%,$(DEPS_MD))
-IMAGE_TARGETS           = $(patsubst %,$(OUTPUT_DIR)/%,$(DEPS_IMAGE)) $(patsubst %,$(OUTPUT_DIR)/%,$(DARK_IMAGES))
-BEAMER_TARGETS          = $(patsubst %.md,$(OUTPUT_DIR)/%.pdf,$(DEPS_BEAMER))
-BOOK_PDF_TARGET         = $(patsubst %.md,$(OUTPUT_DIR)/%.pdf,$(BOOK_SRC))
-BOOK_MD_TARGET          = $(patsubst %,$(OUTPUT_DIR)/%,$(BOOK_SRC))
-SIDEBAR_TARGET          = $(patsubst %,$(OUTPUT_DIR)/%,$(SIDEBAR_SRC))
-NAVBAR_TARGET           = $(patsubst %,$(OUTPUT_DIR)/%,$(NAVBAR_SRC))
+MARKDOWN_TARGETS        = $(patsubst %,$(BUILD_DIR)/%,$(DEPS_MD))
+IMAGE_TARGETS           = $(patsubst %,$(BUILD_DIR)/%,$(DEPS_IMAGE))  $(patsubst %,$(BUILD_DIR)/%,$(DARK_IMAGES))
+BEAMER_TARGETS          = $(patsubst %.md,$(BUILD_DIR)/%.pdf,$(DEPS_BEAMER))
+BOOK_PDF_TARGET         = $(patsubst %.md,$(BUILD_DIR)/%.pdf,$(BOOK_SRC))
+BOOK_MD_TARGET          = $(patsubst %,$(BUILD_DIR)/%,$(BOOK_SRC))
+SIDEBAR_TARGET          = $(patsubst %,$(BUILD_DIR)/%,$(SIDEBAR_SRC))
+NAVBAR_TARGET           = $(patsubst %,$(BUILD_DIR)/%,$(NAVBAR_SRC))
 
 endif
 ## CRAWL
@@ -158,22 +158,22 @@ pdf: OPTIONS           += -d $(PANDOC_DATA)/scripts/pdf.yaml
 
 
 ## individual transformations
-$(MARKDOWN_TARGETS): $(OUTPUT_DIR)/%: %
+$(MARKDOWN_TARGETS): $(BUILD_DIR)/%: %
 	$(create-folder)
 	$(PANDOC) $(OPTIONS)  -M lastmod="$(call lastmod_file,$<)"  $<  -o $@
 
-$(BOOK_MD_TARGET): $(OUTPUT_DIR)/%: %
+$(BOOK_MD_TARGET): $(BUILD_DIR)/%: %
 	$(create-folder)
 	$(PANDOC) $(OPTIONS)  -M lastmod="$(LAST_REPO_COMMIT)"  $<  -o $@
 
-$(IMAGE_TARGETS) $(SIDEBAR_TARGET) $(NAVBAR_TARGET): $(OUTPUT_DIR)/%: %
+$(IMAGE_TARGETS) $(SIDEBAR_TARGET) $(NAVBAR_TARGET): $(BUILD_DIR)/%: %
 	$(create-dir-and-copy)
 
-$(BEAMER_TARGETS): $(OUTPUT_DIR)/%.pdf: %.md
+$(BEAMER_TARGETS): $(BUILD_DIR)/%.pdf: %.md
 	$(create-folder)
 	$(PANDOC) $(OPTIONS)  -M lastmod="$(call lastmod_file,$<)"  $<  -o $@
 
-$(BOOK_PDF_TARGET): $(OUTPUT_DIR)/%.pdf: %.md
+$(BOOK_PDF_TARGET): $(BUILD_DIR)/%.pdf: %.md
 	$(create-folder)
 	$(PANDOC) $(OPTIONS)  -M lastmod="$(LAST_REPO_COMMIT)"  $<  -o $@
 

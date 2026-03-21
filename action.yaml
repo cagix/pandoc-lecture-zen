@@ -16,7 +16,7 @@ inputs:
     description: 'Name of book.md'
     default: 'book.md'
     required: false
-  output_dir:
+  build_dir:
     description: 'Prefix for output'
     default: 'build'
     required: false
@@ -39,7 +39,7 @@ runs:
       shell: bash
 
     - name: 'Compile document(s)'
-      run: make  ${{ inputs.mktarget }}  PANDOC_DATA=${{ inputs.pandoc_data }}  METADATA=${{ inputs.metadata }}  BOOK_SRC=${{ inputs.book_src }}  OUTPUT_DIR=${{ inputs.output_dir }}  IMAGE_DARK_SUFFIX=${{ inputs.image_dark_suffix }}
+      run: make  ${{ inputs.mktarget }}  PANDOC_DATA=${{ inputs.pandoc_data }}  METADATA=${{ inputs.metadata }}  BOOK_SRC=${{ inputs.book_src }}  BUILD_DIR=${{ inputs.build_dir }}  IMAGE_DARK_SUFFIX=${{ inputs.image_dark_suffix }}
       shell: bash
 
     - name: 'Debug'
