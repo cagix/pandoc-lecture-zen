@@ -108,7 +108,7 @@ distclean: clean
 
 ## CRAWL
 ## crawl.lua needs docker/pandoc, so do only include (and build) when required
-GOALS_NO_DEPS          := clean distclean
+GOALS_NO_DEPS          := clean distclean update_tooling
 ifneq ($(filter-out $(GOALS_NO_DEPS),$(MAKECMDGOALS)),)
 
 ## crawl and find dependencies
