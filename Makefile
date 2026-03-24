@@ -12,7 +12,8 @@ GRPID                  ?= $(shell id -g)
 
 ## Pandoc
 CONTAINER_MIN           = pandoc/minimal:latest-debian
-CONTAINER_EXT           = pandoc/extra:latest-debian
+#CONTAINER_EXT           = pandoc/extra:latest-debian  ## TODO broken (see https://github.com/pandoc/dockerfiles/issues/272)
+CONTAINER_EXT           = pandoc/extra:latest-ubuntu
 
 PANDOC_MIN             ?= docker run --rm --volume "$(WORKDIR):/data" --workdir /data --user $(USRID):$(GRPID) $(CONTAINER_MIN)
 PANDOC_EXT             ?= docker run --rm --volume "$(WORKDIR):/data" --workdir /data --user $(USRID):$(GRPID) $(CONTAINER_EXT)
