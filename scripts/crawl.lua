@@ -57,10 +57,10 @@ local README_CANDIDATES = { "readme.md", "README.md", "Readme.md" }
 local ROOT_README_LABEL = "Syllabus"
 
 local cfg = {
-    book = { enabled = nil, },  -- default: book disabled
-    sidebar = { file = nil, },  -- default: sidebar disabled
+    book = { enabled = false, },  -- default: book disabled
+    sidebar = { file = "", },     -- default: sidebar disabled
     make = {
-        file = nil,             -- default: make disabled
+        file = "",                -- default: make disabled
         vars = {
             md     = "DEPS_MD",
             beamer = "DEPS_BEAMER",
@@ -645,7 +645,7 @@ local function _meta (meta)
     -- -M book=false  -> disable book output
     -- -M book=true   -> enable book output
     if meta["book"] ~= nil then
-        cfg.book.enabled = meta.book
+        cfg.book.enabled = utils_stringify(meta.book):lower() == "true"
     end
 
     -- -M sidebar=_sidebar.md
@@ -697,8 +697,8 @@ function Pandoc (doc)
     local tree = _crawl(startfile)
 
     -- emit to files when configured
-    if cfg.make.file    then _emit_depsmk(tree)  end
-    if cfg.sidebar.file then _emit_sidebar(tree) end
+    if cfg.make.file    ~= "" then _emit_depsmk(tree)  end
+    if cfg.sidebar.file ~= "" then _emit_sidebar(tree) end
 
     -- return book as Pandoc document
     if cfg.book.enabled then return _emit_book(tree) end
