@@ -36,6 +36,7 @@ ROOT_DOC               ?= readme.md
 BOOK_SRC               ?= book.md
 BUILD_DIR              ?= build
 IMAGE_DARK_SUFFIX      ?= _inv
+BASE_URL               ?= https://raw.githubusercontent.com/
 
 
 
@@ -85,6 +86,7 @@ lastmod_file            = $$( git log -n 1 --pretty=format:%h\ %ad\ %s -- '$(1)'
 OPTIONS                 = --metadata-file=$(METADATA)
 OPTIONS                += -M bibliography=$(BIB_FILE)
 OPTIONS                += -M root_doc=$(ROOT_DOC)
+OPTIONS                += -M base_url=$(BASE_URL)
 
 
 ## Fetch docker images
