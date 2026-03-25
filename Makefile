@@ -81,7 +81,6 @@ lastmod_file            = $$( git log -n 1 --pretty=format:%h\ %ad\ %s -- '$(1)'
 
 ## Common options
 OPTIONS                 = --metadata-file=$(METADATA)
-OPTIONS                += --quiet
 
 
 ## Fetch docker images
