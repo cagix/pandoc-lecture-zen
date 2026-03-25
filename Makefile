@@ -246,7 +246,7 @@ publish_orphan:
 	git rm -r --cached . 2>/dev/null || true
 
 	# delete any old files and move build content
-	find . -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf {} +
+	find . -mindepth 1 -maxdepth 1 ! -name '.git' ! -name '$(BUILD_DIR)' -exec rm -rf {} +
 	mv "$(BUILD_DIR)"/* .
 	rm -rf "$(BUILD_DIR)"
 
