@@ -36,7 +36,7 @@ ROOT_DOC               ?= readme.md
 BOOK_SRC               ?= book.md
 BUILD_DIR              ?= build
 IMAGE_DARK_SUFFIX      ?= _inv
-BASE_URL               ?= https://raw.githubusercontent.com/
+BASE_URL               ?= https://raw.githubusercontent.com/USER/REPO/BRANCH
 
 
 
