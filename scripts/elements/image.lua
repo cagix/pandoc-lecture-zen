@@ -30,8 +30,8 @@ local utils_stringify      = utils.stringify
 -- ==========================
 -- Configuration
 -- ==========================
-local image_dark_suffix = nil
-local base_url = nil
+local image_dark_suffix = ""
+local base_url = ""
 local current_file = ""
 
 
@@ -112,7 +112,7 @@ end
 -- calculate filename for "dark" version based on src and image_dark_suffix
 -- returns nil if image_dark_suffix does not exist
 local function _calc_dark_image_name (src)
-    if image_dark_suffix then
+    if image_dark_suffix ~= "" then
         local path, extension = path_split_extension(src)
         return path .. image_dark_suffix  .. extension
     end
@@ -121,7 +121,7 @@ end
 
 -- calculate url if base_url is set
 local function _calc_web_path (path_light, path_dark)
-    if base_url then
+    if base_url ~= "" then
         -- normalize paths using path to current file (just once, use normalized path for dark version too)
         path_light = _normalize_target(current_file, path_light)
         path_dark  = path_dark and path_join({ path_directory(path_light), path_filename(path_dark) }) or nil
@@ -181,14 +181,14 @@ local function _image_to_picture (src, width, caption)
         if cache and cache.checked then
             path_dark = cache.path
         else
-            if image_dark_suffix then
+            if image_dark_suffix ~= "" then
                 path_dark = _calc_dark_image_name(src)
                 path_dark = _file_exists(path_dark) and path_dark or nil
                 dark_cache[src] = {path=path_dark, checked=true}
             end
         end
 
-        if base_url then
+        if base_url ~= "" then
             path_light, path_dark = _calc_web_path(path_light, path_dark)
         end
     end
