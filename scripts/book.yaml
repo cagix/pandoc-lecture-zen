@@ -3,7 +3,7 @@
 
 ## general options
 from: markdown+alerts+mark+smart+lists_without_preceding_blankline
-to: markdown+alerts+mark+smart+four_space_rule-grid_tables-multiline_tables-simple_tables
+to: markdown+alerts+mark+smart+four_space_rule-grid_tables-multiline_tables-simple_tables-implicit_header_references-header_attributes
 # TODO: remove "+alerts" from "to" once https://github.com/jgm/pandoc/issues/11533 and https://github.com/jgm/pandoc/issues/11534 will be fixed and new pandoc version (3.9.0.1) appears in docker image (alerts won't be recognized by writer when parsed from pandocs nested div representation)
 
 

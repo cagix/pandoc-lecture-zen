@@ -3,7 +3,7 @@
 
 ## general options
 from: markdown+alerts+mark+smart+lists_without_preceding_blankline-implicit_figures
-to: markdown+alerts+smart+four_space_rule-grid_tables-multiline_tables-simple_tables-bracketed_spans-fenced_divs
+to: markdown+alerts+smart+four_space_rule-grid_tables-multiline_tables-simple_tables-implicit_header_references-header_attributes-bracketed_spans-fenced_divs
 
 
 ## reader options
