@@ -7,7 +7,7 @@ Image-centric Pandoc Lua filter for Markdown-to-Markdown transformations:
 - when metadata `base_url` is set, converts relative local paths to URLs in `<img>` (or `<picture>`)
 - when metadata `image_dark_suffix` is set, checks for `path/image_suffix.png` beside a local image
   and, if present, emits a `<picture>` instead of `<img>` with a dark-mode source; non-local images are not checked
-- for Beamer format, centers all images
+- for Beamer and PDF (LaTeX) format, centers all images
 - to be invoked with implicit_figures disabled for markdown: `from: markdown-implicit_figures`
 ]]
 
@@ -212,7 +212,7 @@ local function _image (el)
     if FORMAT:match 'beamer' or FORMAT:match 'latex' then
         -- center images without captions too (like "real" images w/ caption aka figures)
         -- remove as a precaution any parameter `web_width`, which should only be respected in the web version.
-        -- note: this will also add an extra center environment for "real" images - not necessary, but not harmful either
+        -- NOTE: this will also add an extra center environment for "real" images - not necessary, but not harmful either
         el.attributes["web_width"] = nil
         return {
             pandoc.RawInline('latex', '\\begin{center}'),
@@ -226,7 +226,9 @@ local function _image (el)
         -- because this would result in `<img src=... style="width:...">` - and GitHub unfortunately would filter all
         -- "style" parameters. This way GitHub preview will respect the given width parameter (for now).
         -- If both "width" and "web_width" parameters are present, "web_width" takes precedence
-        -- Caveat: We now also need to handle ‘figures’ ourselves - thus deactivating the `implicit_figures` option!
+        -- NOTE: This conversion will also replace images wrapped in a figure with a rawinline img/picture, causing the
+        --       markdown-writer to ignore the content! So we now also need to handle ‘figures’ ourselves and emit proper
+        --       figures - thus deactivating the `implicit_figures` extension when reading from markdown!
         local width = el.attributes["web_width"]  or  el.attributes["width"]  or  ""
         local caption = utils_stringify(el.caption)
 
