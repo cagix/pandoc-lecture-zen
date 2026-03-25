@@ -209,10 +209,10 @@ end
 -- ==========================
 
 local function _image (el)
-    if FORMAT:match 'beamer' then
+    if FORMAT:match 'beamer' or FORMAT:match 'latex' then
         -- center images without captions too (like "real" images w/ caption aka figures)
         -- remove as a precaution any parameter `web_width`, which should only be respected in the web version.
-        -- note: images w/ caption will be parsed (implicitly) as figures instead - no need to check for empty caption here
+        -- note: this will also add an extra center environment for "real" images - not necessary, but not harmful either
         el.attributes["web_width"] = nil
         return {
             pandoc.RawInline('latex', '\\begin{center}'),
