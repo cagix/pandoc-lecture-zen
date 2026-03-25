@@ -7,7 +7,7 @@ Image-centric Pandoc Lua filter for Markdown-to-Markdown transformations:
 - when metadata `base_url` is set, converts relative local paths to URLs in `<img>` (or `<picture>`)
 - when metadata `image_dark_suffix` is set, checks for `path/image_suffix.png` beside a local image
   and, if present, emits a `<picture>` instead of `<img>` with a dark-mode source; non-local images are not checked
-- for Beamer and PDF (LaTeX) format, centers all images
+- centers all images and figures (Docsify, Beamer, PDF/LaTeX)
 - to be invoked with implicit_figures disabled for markdown: `from: markdown-implicit_figures`
 ]]
 
@@ -149,6 +149,11 @@ local function _create_image (path_light, path_dark, width)
     return string.format('<img src="%s" %s />', path_light, w)
 end
 
+-- center images
+local function _center_image (image)
+    return string.format('<p align="center">%s</p>', image)
+end
+
 -- workaround for GH preview, will also work in Docsify
 local function _wrap_in_figure_p (image, caption)
     return string.format(
@@ -197,6 +202,8 @@ local function _image_to_picture (src, width, caption)
 
     if caption ~= "" then
         image = _wrap_in_figure_p(image, caption)
+    else
+        image = _center_image(image)
     end
 
     return image
