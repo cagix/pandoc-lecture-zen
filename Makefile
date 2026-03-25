@@ -24,7 +24,7 @@ ifneq ($(filter $(LATEX_GOALS),$(MAKECMDGOALS)),)
 PANDOC                 := $(PANDOC_EXT)
 endif
 
-## Folder containing the Pandoc-Lecture-Zen project
+## Folder containing the Pandoc-Lecture-Zen project tooling
 PANDOC_DATA            ?= .pandoc
 
 
@@ -33,10 +33,19 @@ PANDOC_DATA            ?= .pandoc
 METADATA               ?= lecture.yaml
 BIB_FILE               ?= lecture.bib
 ROOT_DOC               ?= readme.md
+
+## Generated output files and directories
 BOOK_SRC               ?= book.md
 BUILD_DIR              ?= build
+
+## Image settings for dark and light themes
 IMAGE_DARK_SUFFIX      ?= _inv
 BASE_URL               ?= https://raw.githubusercontent.com/USER/REPO/BRANCH
+
+## Publishing settings for the output branch
+PUBLISH_BRANCH         ?= _build
+GIT_AUTHOR_NAME        ?= github-actions[bot]
+GIT_AUTHOR_EMAIL       ?= github-actions[bot]@users.noreply.github.com
 
 
 
@@ -66,25 +75,28 @@ DEPS_BEAMER            ?=
 ## Git / Lastmod helpers
 ###############################################################################
 
+
 ## Last commit in repo
+## msg=${msg//\"/}; msg=${msg//\'/}; msg=${msg//\`/}; msg=${msg//\$/}
 LAST_REPO_COMMIT       := $(shell \
-  msg="$$(git log -n 1 --pretty=format:%h\ %ad\ %s 2>/dev/null || echo 'unversioned')"; \
-  msg=$${msg//\"/}; \
-  msg=$${msg//\'/}; \
-  msg=$${msg//\`/}; \
-  msg=$${msg//\$/}; \
-  printf '%s\n' "$$msg" \
+  git log -n 1 --pretty=format:%h\ %ad\ %s 2>/dev/null \
+  | sed 's/["'"'"'`$$]//g' \
+  || echo "unversioned" \
+)
+
+## Last commit in repo (message only, for pushing to orphan branch)
+PUBLISH_COMMIT_MESSAGE := $(shell \
+  git log -n 1 --pretty=format:%s 2>/dev/null \
+  | sed 's/["'"'"'`$$]//g' \
+  || echo "unversioned" \
 )
 
 ## Make-"function": last commit for an individual file, fallback to last commit in repo
 ## call in receipes: $(call lastmod_file,$<)
-lastmod_file            = $$( \
-  msg="$$(git log -n 1 --pretty=format:%h\ %ad\ %s -- '$(1)' 2>/dev/null || echo '$(LAST_REPO_COMMIT)')"; \
-  msg=$${msg//\"/}; \
-  msg=$${msg//\'/}; \
-  msg=$${msg//\`/}; \
-  msg=$${msg//\$/}; \
-  printf '%s\n' "$$msg" \
+lastmod_file            = $(shell \
+  git log -n 1 --pretty=format:%h\ %ad\ %s -- '$(1)' 2>/dev/null \
+  | sed 's/["'"'"'`$$]//g' \
+  || echo '$(LAST_REPO_COMMIT)' \
 )
 
 
@@ -124,6 +136,8 @@ distclean: clean
 ###############################################################################
 ## Auxiliary targets (do not change)
 ###############################################################################
+
+.ONESHELL:
 
 
 ## CRAWL
@@ -210,6 +224,42 @@ cp $< $@
 endef
 
 
+## Publish to orphan branch
+GITHUB_EVENT_NAME      ?=
+ifeq ($(strip $(GITHUB_EVENT_NAME)),workflow_dispatch)
+PUBLISH_COMMIT_MESSAGE := publish materials (manual trigger)
+endif
+publish_orphan:
+	# safety checks
+	test -d .git || { echo "ERROR: .git not found. Run publish_orphan in the lecture repo root."; exit 2; }
+	test -d "$(BUILD_DIR)" || { echo "ERROR: BUILD_DIR '$(BUILD_DIR)' not found"; exit 2; }
+	test "$(BUILD_DIR)" != "." || { echo "ERROR: BUILD_DIR must not be '.'"; exit 2; }
+	test "$(BUILD_DIR)" != "/" || { echo "ERROR: BUILD_DIR must not be '/'"; exit 2; }
+
+	# clean-up working copy
+	git reset --hard
+	git clean -fd
+
+	# checkout (new) orphan branch
+	git branch -D "$(PUBLISH_BRANCH)" 2>/dev/null || true
+	git switch --orphan "$(PUBLISH_BRANCH)"
+	git rm -r --cached . 2>/dev/null || true
+
+	# delete any old files and move build content
+	find . -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf {} +
+	mv "$(BUILD_DIR)"/* .
+	rm -rf "$(BUILD_DIR)"
+
+	# commit and push
+	git add -f .
+	if git diff --cached --quiet; then
+		echo "no changes to publish"
+	else
+		git -c user.name="$(GIT_AUTHOR_NAME)" -c user.email="$(GIT_AUTHOR_EMAIL)" commit -m "$(PUBLISH_COMMIT_MESSAGE)"
+		git push --force origin "$(PUBLISH_BRANCH)"
+	fi
+
+
 
 
 
@@ -218,4 +268,4 @@ endef
 ###############################################################################
 
 
-.PHONY: all docker clean distclean format docsify beamer pdf handout
+.PHONY: all docker clean distclean format docsify beamer pdf handout publish_orphan
