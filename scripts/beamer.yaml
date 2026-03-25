@@ -19,6 +19,7 @@ filters:
   - ${.}/elements/details.lua
   - ${.}/elements/ghalerts.lua
   - ${.}/elements/code.lua
+  - ${.}/elements/remove_internal_links.lua
   - ${.}/elements/deprecated.lua
 
 
