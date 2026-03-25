@@ -31,6 +31,7 @@ PANDOC_DATA            ?= .pandoc
 ## Source files of your project
 ## (Adjust to your needs.)
 METADATA               ?= lecture.yaml
+BIB_FILE               ?= lecture.bib
 BOOK_SRC               ?= book.md
 BUILD_DIR              ?= build
 IMAGE_DARK_SUFFIX      ?= _inv
@@ -81,6 +82,7 @@ lastmod_file            = $$( git log -n 1 --pretty=format:%h\ %ad\ %s -- '$(1)'
 
 ## Common options
 OPTIONS                 = --metadata-file=$(METADATA)
+OPTIONS                += -M bibliography=$(BIB_FILE)
 
 
 ## Fetch docker images
