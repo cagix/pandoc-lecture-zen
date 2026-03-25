@@ -67,11 +67,25 @@ DEPS_BEAMER            ?=
 ###############################################################################
 
 ## Last commit in repo
-LAST_REPO_COMMIT       := $(shell git log -n 1 --pretty=format:%h\ %ad\ %s 2>/dev/null  ||  echo "unversioned")
+LAST_REPO_COMMIT       := $(shell \
+  msg="$$(git log -n 1 --pretty=format:%h\ %ad\ %s 2>/dev/null || echo 'unversioned')"; \
+  msg=$${msg//\"/}; \
+  msg=$${msg//\'/}; \
+  msg=$${msg//\`/}; \
+  msg=$${msg//\$/}; \
+  printf '%s\n' "$$msg" \
+)
 
 ## Make-"function": last commit for an individual file, fallback to last commit in repo
 ## call in receipes: $(call lastmod_file,$<)
-lastmod_file            = $$( git log -n 1 --pretty=format:%h\ %ad\ %s -- '$(1)' 2>/dev/null  ||  echo '$(LAST_REPO_COMMIT)' )
+lastmod_file            = $$( \
+  msg="$$(git log -n 1 --pretty=format:%h\ %ad\ %s -- '$(1)' 2>/dev/null || echo '$(LAST_REPO_COMMIT)')"; \
+  msg=$${msg//\"/}; \
+  msg=$${msg//\'/}; \
+  msg=$${msg//\`/}; \
+  msg=$${msg//\$/}; \
+  printf '%s\n' "$$msg" \
+)
 
 
 
