@@ -47,9 +47,9 @@
 
 
 %%-- Coloured boxes
-\definecolor{ghinfo}{RGB}{ 89, 89, 89}
+\definecolor{ghinfo}{RGB}{ 47,129,247}
 \definecolor{ghtip}{RGB}{ 26,127, 55}
-\definecolor{ghimportant}{RGB}{ 47,129,247}
+\definecolor{ghimportant}{RGB}{124, 84,216}
 \definecolor{ghwarning}{RGB}{191,135,  0}
 \definecolor{gherror}{RGB}{207, 34, 46}
 
@@ -61,7 +61,7 @@
 
 \newenvironment{info-box}[1][Info]{%
   \begingroup
-  \setbeamercolor{block title}{fg=white,bg=ghinfo}%
+  \setbeamercolor{block title}{fg=white,bg=ghinfo!85!black}%
   \setbeamercolor{block body}{fg=black,bg=ghinfoBG}%
   \begin{block}{{\small #1}}%
 }{%
