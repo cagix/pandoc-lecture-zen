@@ -2,7 +2,7 @@
 
 if (FORMAT:match 'latex') or (FORMAT:match 'beamer') then
     function Div(el)
-        -- Replace "details" Div with <details>
+        -- Replace "details" Div with plain tex and adjust fontsize
         if el.classes[1] == "details" then
             local bl = pandoc.List()
 
