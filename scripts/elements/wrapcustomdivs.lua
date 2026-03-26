@@ -59,26 +59,21 @@ local divs = {
     },
 }
 
-local function makeQuote(quote, details, summary, content)
-    return pandoc.Div(
-        pandoc.Div(
-            content, {class = "details", title = summary, opt = details}
-        ), {class = quote}
-    )
-end
-
 
 if FORMAT:match 'latex' then
     function Div(el)
         local env = el.classes[1]
 
-        -- handle custom divs: wrap content in "details" div, use "fontsize" as option for LaTeX
+        -- handle custom divs: wrap content in ghalert div
         if divs[env] then
             local defs = divs[env]
-            return makeQuote(defs.quote, defs.fontsize, defs.summary, el.content)
+            return pandoc.Div(
+                el.content, {class = defs.quote, title = defs.summary, opt = defs.fontsize}
+            )
         end
     end
 end
+
 
 if FORMAT:match 'beamer' then
     function Div(el)
@@ -91,14 +86,19 @@ if FORMAT:match 'beamer' then
     end
 end
 
+
 if FORMAT:match 'markdown' then
     function Div(el)
         local env = el.classes[1]
 
-        -- handle custom divs: wrap content in "details" div, use "details" ("open" vs. "") as option for GitHub/Docsify
+        -- handle custom divs: use ghalert and wrap content in "details" div, use "details" ("open" vs. "") as option for GitHub/Docsify
         if divs[env] then
             local defs = divs[env]
-            return makeQuote(defs.quote, defs.details, defs.icon .. " " .. defs.summary, el.content)
+            return pandoc.Div(
+                pandoc.Div(
+                    el.content, {class = "details", title = defs.icon .. " " .. defs.summary, opt = defs.details}
+                ), {class = defs.quote}
+            )
         end
     end
 end
