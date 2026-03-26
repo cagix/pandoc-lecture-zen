@@ -60,45 +60,32 @@ local divs = {
 }
 
 
-if FORMAT:match 'latex' then
-    function Div(el)
-        local env = el.classes[1]
+function Div(el)
+    local env = el.classes[1]
 
-        -- handle custom divs: wrap content in ghalert div
-        if divs[env] then
-            local defs = divs[env]
+    if divs[env] then
+        local defs = divs[env]
+
+        if FORMAT:match 'latex' then
+            -- wrap content in ghalert div
             return pandoc.Div(
                 el.content, {class = defs.quote, title = defs.summary, opt = defs.fontsize}
             )
         end
-    end
-end
 
-
-if FORMAT:match 'beamer' then
-    function Div(el)
-        local env = el.classes[1]
-
-        -- handle custom divs: remove custom divs entirely
-        if divs[env] then
+        if FORMAT:match 'beamer' then
+            -- remove custom divs entirely
             return {}
         end
-    end
-end
 
-
-if FORMAT:match 'markdown' then
-    function Div(el)
-        local env = el.classes[1]
-
-        -- handle custom divs: use ghalert and wrap content in "details" div, use "details" ("open" vs. "") as option for GitHub/Docsify
-        if divs[env] then
-            local defs = divs[env]
-            return pandoc.Div(
-                pandoc.Div(
-                    el.content, {class = "details", title = defs.icon .. " " .. defs.summary, opt = defs.details}
-                ), {class = defs.quote}
-            )
+        if FORMAT:match 'markdown' then
+            -- use ghalert and wrap content in "details" div, use "details" ("open" vs. "") as option for GitHub/Docsify
+                return pandoc.Div(
+                    pandoc.Div(
+                        el.content, {class = "details", title = defs.icon .. " " .. defs.summary, opt = defs.details}
+                    ), {class = defs.quote}
+                )
         end
+
     end
 end
