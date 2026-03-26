@@ -15,6 +15,11 @@
 \newcommand{\ex}[1]{\hfill #1}
 
 
+%%-- KOMA-Script: handle run-in headings (paragraph, subparagraph) like "normal" headings
+\RedeclareSectionCommand[beforeskip=2.5ex plus 1ex minus .2ex, afterskip=1.0ex plus .2ex]{paragraph}
+\RedeclareSectionCommand[beforeskip=2.0ex plus .8ex minus .2ex, afterskip=0.8ex plus .2ex]{subparagraph}
+
+
 %%-- Coloured boxes
 \newtcolorbox{info-box}{colback=cyan!5!white,arc=0pt,outer arc=0pt,colframe=cyan!60!black}
 \newtcolorbox{tip-box}{colback=green!5!white,arc=0pt,outer arc=0pt,colframe=green!60!black}
