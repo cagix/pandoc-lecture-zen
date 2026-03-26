@@ -75,12 +75,12 @@ function Link(el)
     local src = el.target
     if src == nil or src == "" or src == "." then
         el.target = "."
-        io.stderr:write("\n[WARNING]  [markdown.lua]  detected relative link to file on same folder level: '" .. el.target .. "' => add extra '&relative-paths=true' to generated docify-this url\n\n")
+        io.stderr:write("\n[WARNING]  [markdown.lua]  detected relative link to file on same folder level: '" .. el.target .. "' => ADD EXTRA '&relative-paths=true' TO GENERATED DOCSIFY-THIS URL\n\n")
     else
         local path_components = pandoc.path.split(src)
         if #path_components == 1 and _is_local_link(src) then
             el.target = pandoc.path.join({ ".", src})
-            io.stderr:write("\n[WARNING]  [markdown.lua]  detected relative link to file on same folder level: '" .. el.target .. "' => add extra '&relative-paths=true' to generated docify-this url\n\n")
+            io.stderr:write("\n[WARNING]  [markdown.lua]  detected relative link to file on same folder level: '" .. el.target .. "' => ADD EXTRA '&relative-paths=true' TO GENERATED DOCSIFY-THIS URL\n\n")
         end
     end
 
