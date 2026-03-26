@@ -2,6 +2,8 @@
 %%-- Packages
 \usepackage{tcolorbox}
 %\tcbuselibrary{breakable}      %% TODO: needs pdfcol.sty, which is missing in pandoc/extra (https://github.com/pandoc/dockerfiles/issues/272)
+\usepackage{xcolor}
+\usepackage{framed}
 
 
 %%-- Undefine Beamer's \pause command
@@ -21,8 +23,38 @@
 
 
 %%-- Coloured boxes
-\newtcolorbox{info-box}{colback=cyan!5!white,arc=0pt,outer arc=0pt,colframe=cyan!60!black}
-\newtcolorbox{tip-box}{colback=green!5!white,arc=0pt,outer arc=0pt,colframe=green!60!black}
-\newtcolorbox{important-box}{colback=blue!5!white,arc=0pt,outer arc=0pt,colframe=blue!60!black}
-\newtcolorbox{warning-box}{colback=orange!5!white,arc=0pt,outer arc=0pt,colframe=orange!80!black}
-\newtcolorbox{error-box}{colback=red!5!white,arc=0pt,outer arc=0pt,colframe=red!75!black}
+\setlength{\FrameSep}{8pt}                              %% padding
+\setlength{\FrameRule}{2pt}                             %% width of left bar
+
+\newcommand{\AlertTitleFont}{\normalsize\bfseries}      %% alternativ: \small\bfseries
+
+\newenvironment{AlertBox}[3]{%
+  \par\addvspace{.8\baselineskip}%
+  \def\FrameCommand{%
+    {\color{#2}\vrule width \FrameRule}\hspace{\FrameSep}%
+    \colorbox{#3}%
+  }%
+  \MakeFramed{\advance\hsize-\width \FrameRestore}%
+  \noindent{\AlertTitleFont #1}\par\medskip
+}{%
+  \endMakeFramed%
+  \par\addvspace{.4\baselineskip}%
+}
+
+\definecolor{ghinfo}{RGB}{ 89, 89, 89}
+\definecolor{ghtip}{RGB}{ 26, 127,  55}
+\definecolor{ghimportant}{RGB}{ 47, 129, 247}
+\definecolor{ghwarning}{RGB}{191, 135,   0}
+\definecolor{gherror}{RGB}{207,  34,  46}
+
+\colorlet{ghinfoBG}{ghinfo!8!white}
+\colorlet{ghtipBG}{ghtip!8!white}
+\colorlet{ghimportantBG}{ghimportant!8!white}
+\colorlet{ghwarningBG}{ghwarning!10!white}
+\colorlet{gherrorBG}{gherror!8!white}
+
+\newenvironment{info-box}[1][Info]{\begin{AlertBox}{#1}{ghinfo}{ghinfoBG}}{\end{AlertBox}}
+\newenvironment{tip-box}[1][Tip]{\begin{AlertBox}{#1}{ghtip}{ghtipBG}}{\end{AlertBox}}
+\newenvironment{important-box}[1][Important]{\begin{AlertBox}{#1}{ghimportant}{ghimportantBG}}{\end{AlertBox}}
+\newenvironment{warning-box}[1][Warning]{\begin{AlertBox}{#1}{ghwarning}{ghwarningBG}}{\end{AlertBox}}
+\newenvironment{error-box}[1][Error]{\begin{AlertBox}{#1}{gherror}{gherrorBG}}{\end{AlertBox}}
