@@ -23,7 +23,6 @@ filters:
   - ${.}/elements/deprecated.lua
 
 metadata:
-  book: true
   link-citations: true
 
 
@@ -40,6 +39,7 @@ variables:
   papersize: a4
   fontsize: 10pt
   colorlinks: true
+  book: true
   titlepage: true
   classoption: oneside  ## pdf is for online use only, also this will avoid empty pages between chapters
 #  code-block-font-size: '\footnotesize'
@@ -52,7 +52,7 @@ toc-depth: 3
 
 
 ## options for specific writer
-top-level-division: part
+top-level-division: part  ## in combination with book=true
 listings: true
 
 number-sections: true
