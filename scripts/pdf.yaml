@@ -23,6 +23,7 @@ filters:
   - ${.}/elements/deprecated.lua
 
 metadata:
+  book: true
   link-citations: true
 
 
@@ -50,6 +51,7 @@ toc-depth: 3
 
 
 ## options for specific writer
+top-level-division: part
 listings: true
 
 number-sections: true
