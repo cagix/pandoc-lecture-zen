@@ -17,6 +17,11 @@
 \newcommand{\ex}[1]{\hfill #1}
 
 
+%%-- part (-1): lecture-folder, chapter (0): topic, section (1): session, subsection (2): slide
+%%-- do use section numbers only until subsubsection (one below slide-level)
+\setcounter{secnumdepth}{3}
+
+
 %%-- KOMA-Script: handle run-in headings (paragraph, subparagraph) like "normal" headings
 \RedeclareSectionCommand[beforeskip=2.5ex plus 1ex minus .2ex, afterskip=1.0ex plus .2ex]{paragraph}
 \RedeclareSectionCommand[beforeskip=2.0ex plus .8ex minus .2ex, afterskip=0.8ex plus .2ex]{subparagraph}
