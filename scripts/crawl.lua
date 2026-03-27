@@ -269,12 +269,14 @@ local function _label_for_node (n)
 end
 
 -- helper: get meta data (title) for dir node
-local function _compute_dir_meta (dirnode)
+-- if given use startfile as readme; try README_CANDIDATES otherwise
+local function _compute_dir_meta (dirnode, startfile)
     local p = dirnode.path
 
     -- search for readme.md
     local found = nil
-    for _, rn in ipairs(README_CANDIDATES) do
+    local candidate_list = (startfile and startfile ~= "") and { startfile } or README_CANDIDATES
+    for _, rn in ipairs(candidate_list) do
         local candidate = path_join({ p, rn })
         if path_exists(candidate) then
             found = candidate
@@ -359,10 +361,11 @@ local function _ensure_dir_chain (root, filepath)
 end
 
 -- ensure that the readme path for dirnode is set
-local function _ensure_dir_meta (dirnode)
+-- use startfile (if not empty string) instead of readme.md
+local function _ensure_dir_meta (dirnode, startfile)
     if dirnode.meta_done then return end
 
-    local m = _compute_dir_meta(dirnode)
+    local m = _compute_dir_meta(dirnode, startfile)
 
     dirnode.title = m.title
     dirnode.readme_path = m.readme_path
@@ -432,8 +435,9 @@ local function _crawl (startfile)
     end
 
     -- initialize root from startfile + enqueue startfile
-    _ensure_dir_meta(root)
-    _enqueue(_normalize_relpath(startfile))
+    local normalized_startfile = _normalize_relpath(startfile)
+    _ensure_dir_meta(root, normalized_startfile)
+    _enqueue(normalized_startfile)
 
     -- main loop: read next file & extract + enqueue all local markdown links
     local current = _dequeue()
@@ -453,7 +457,7 @@ local function _crawl (startfile)
 
         -- ensure directory metadata along the path (lazy)
         for _, d in ipairs(dirchain) do
-            _ensure_dir_meta(d)
+            _ensure_dir_meta(d, "")
         end
 
         -- also _crawl readme.md along the path
