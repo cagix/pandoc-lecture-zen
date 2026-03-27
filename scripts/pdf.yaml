@@ -41,6 +41,7 @@ variables:
   fontsize: 10pt
   colorlinks: true
   titlepage: true
+  classoption: oneside  ## pdf is for online use only, also this will avoid empty pages between chapters
 #  code-block-font-size: '\footnotesize'
 
 include-in-header:
