@@ -149,8 +149,13 @@ local function _normalize_md_target (basefile, target)
     return _normalize_local_target(basefile, target)
 end
 
+-- create a link if target given: 'prefix [label](target)'
+-- else return just 'prefix label'
 local function _create_md_link (prefix, label, target)
-    return prefix .. "[" .. label .. "](" .. target .. ")"
+    if target then
+        return prefix .. "[" .. label .. "](" .. target .. ")"
+    end
+    return prefix .. label
 end
 
 local function _write_string_to_file (filename, strcontent)
@@ -548,8 +553,7 @@ local function _emit_sidebar (root)
 
         if node.kind == "dir" then
             local label = (depth == 0) and ROOT_README_LABEL or _label_for_node(node)
-            local entry = node.readme_path and _create_md_link(indent, label, node.readme_path)
-                                         or (indent .. label)
+            local entry = _create_md_link(indent, label, node.readme_path)
             lines[#lines + 1] = entry
         end
 
