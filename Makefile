@@ -219,10 +219,6 @@ endef
 
 
 ## Publish to orphan branch
-GITHUB_EVENT_NAME      ?=
-ifeq ($(strip $(GITHUB_EVENT_NAME)),workflow_dispatch)
-PUBLISH_COMMIT_MESSAGE := publish materials (manual trigger)
-endif
 publish_orphan:
 	BUILD_DIR="$(BUILD_DIR)"  PUBLISH_BRANCH="$(PUBLISH_BRANCH)"  GIT_AUTHOR_NAME="$(GIT_AUTHOR_NAME)"  GIT_AUTHOR_EMAIL="$(GIT_AUTHOR_EMAIL)"  PUBLISH_COMMIT_MESSAGE="$(PUBLISH_COMMIT_MESSAGE)"  $(PANDOC_DATA)/scripts/publish_orphan.sh
 
