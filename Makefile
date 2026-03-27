@@ -79,7 +79,7 @@ DEPS_BEAMER            ?=
 ## Last commit in repo
 ## msg=${msg//\"/}; msg=${msg//\'/}; msg=${msg//\`/}; msg=${msg//\$/}
 LAST_REPO_COMMIT       := $(shell \
-  git log -n 1 --pretty=format:%h\ %ad\ %s 2>/dev/null \
+  git log -n 1 --pretty=format:%h\ %ad\ %s --date=short 2>/dev/null \
   | sed 's/["'"'"'`$$]//g' \
   || echo "unversioned" \
 )
@@ -94,7 +94,7 @@ PUBLISH_COMMIT_MESSAGE := $(shell \
 ## Make-"function": last commit for an individual file, fallback to last commit in repo
 ## call in receipes: $(call lastmod_file,$<)
 lastmod_file            = $(shell \
-  git log -n 1 --pretty=format:%h\ %ad\ %s -- '$(1)' 2>/dev/null \
+  git log -n 1 --pretty=format:%h\ %ad\ %s --date=short -- '$(1)' 2>/dev/null \
   | sed 's/["'"'"'`$$]//g' \
   || echo '$(LAST_REPO_COMMIT)' \
 )
