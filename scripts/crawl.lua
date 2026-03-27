@@ -552,9 +552,10 @@ local function _emit_sidebar (root)
         local indent = string.rep("  ", eff_depth) .. "- "
 
         if node.kind == "dir" then
+            -- level 0 (syllabus): link to readme; otherwise use title of folder readme w/o link
             local label = (depth == 0) and ROOT_README_LABEL or _label_for_node(node)
-            local entry = _create_md_link(indent, label, node.readme_path)
-            lines[#lines + 1] = entry
+            local path  = (depth == 0) and node.readme_path or nil
+            lines[#lines + 1] = _create_md_link(indent, label, path)
         end
 
         if node.kind == "file" then
