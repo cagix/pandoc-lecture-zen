@@ -85,11 +85,7 @@ LAST_REPO_COMMIT       := $(shell \
 )
 
 ## Last commit in repo (message only, for pushing to orphan branch)
-PUBLISH_COMMIT_MESSAGE := $(shell \
-  git log -n 1 --pretty=format:%h\ %ad\ %s --date=short 2>/dev/null \
-  | sed 's/["'"'"'`$$]//g' \
-  || echo "unversioned" \
-)
+PUBLISH_COMMIT_MESSAGE := $(LAST_REPO_COMMIT)
 
 ## Make-"function": last commit for an individual file, fallback to last commit in repo
 ## call in receipes: $(call lastmod_file,$<)
