@@ -35,6 +35,19 @@ IM_INVERT               = -background white -alpha remove -alpha off  -channel R
 DOT_ARGS                = -Tpng
 LATEX_ARGS              = -shell-escape -interaction=nonstopmode
 
+###############################################################################
+## docker run  -it  --name imagemagick  -v "`pwd`:/data" -w /data  --entrypoint /bin/bash  pandoc/extra:latest-ubuntu
+## > apt-update && apt-upgrade && apt-install make imagemagick
+## docker stop imagemagick
+##
+## change $(IMAGEMAGICK) from "magick" to "convert" in this makefile for the time being
+##
+## docker start imagemagick
+## docker exec -it imagemagick /bin/bash
+## > make -f .pandoc/convert.mk images_dark
+## docker stop imagemagick
+###############################################################################
+
 
 
 
