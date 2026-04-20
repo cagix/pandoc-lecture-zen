@@ -41,13 +41,6 @@ function Pandoc(doc)
         blocks:insert(pandoc.RawBlock('latex', '\\scriptsize'))
         blocks:insert(pandoc.BlockQuote(pandoc.Plain({pandoc.Strong('Last modified:'), pandoc.Str(" "), doc.meta.lastmod})))
         blocks:insert(pandoc.RawBlock('latex', '\\normalsize'))
-
-        if FORMAT:match 'latex' then
-            -- add commit sha in footer
-            -- lastmod: "0de6bd3 (commit message, 2025-04-23)"
-            local _, _, commit = string.find(doc.meta.lastmod, "(%w+)%s%(.+%)")
-            doc.meta["footer-left"] = commit
-        end
     end
 
     -- Change numbering style to eg. `slide_numbering: fraction` if present in documents YAML header (default: "none")
