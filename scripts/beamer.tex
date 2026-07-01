@@ -2,9 +2,8 @@
 %%-- Packages
 \usepackage[babel]{csquotes}
 \usepackage{xspace}
-\usepackage{tcolorbox}
-\tcbuselibrary{skins}
-\tcbuselibrary{breakable}
+\usepackage[most]{tcolorbox}
+\tcbuselibrary{skins,breakable}
 %\usepackage{xcolor}            %% already included by beamer
 \usepackage{listings}           %% see https://github.com/cagix/pandoc-lecture/issues/6
 
@@ -59,52 +58,46 @@
 \colorlet{ghwarningBG}{ghwarning!10!white}
 \colorlet{gherrorBG}{gherror!8!white}
 
-\newenvironment{info-box}[1][Note]{%
-  \begingroup
-  \setbeamercolor{block title}{fg=white,bg=ghinfo!85!black}%
-  \setbeamercolor{block body}{fg=black,bg=ghinfoBG}%
-  \begin{block}{{\small #1}}%
-}{%
-  \end{block}%
-  \endgroup
+\tcbset{
+  hsbi-beamerblock/.style={
+    enhanced,
+    breakable,
+    sharp corners,
+    boxrule=0pt,
+    colframe=black,
+    boxsep=0pt,
+    left=6pt,
+    right=6pt,
+    top=4pt,
+    bottom=4pt,
+    fonttitle=\small\bfseries,
+    attach boxed title to top left={xshift=0pt,yshift*=-\tcboxedtitleheight},
+    boxed title style={
+      sharp corners,
+      boxrule=0pt,
+      left=6pt,
+      right=6pt,
+      top=2pt,
+      bottom=2pt,
+    },
+    before skip=4pt,
+    after skip=4pt,
+  },
 }
 
-\newenvironment{tip-box}[1][Tip]{%
-  \begingroup
-  \setbeamercolor{block title}{fg=white,bg=ghtip!85!black}%
-  \setbeamercolor{block body}{fg=black,bg=ghtipBG}%
-  \begin{block}{{\small #1}}%
-}{%
-  \end{block}%
-  \endgroup
+\newcommand{\DeclareHSBIBeamerBox}[5]{%
+  %% #1 name, #2 default title, #3 title colour, #4 background colour, #5 title text colour
+  \newtcolorbox{#1}[1][#2]{%
+    hsbi-beamerblock,
+    colback=#4,
+    coltitle=#5,
+    colbacktitle=#3,
+    title={##1},
+  }%
 }
 
-\newenvironment{important-box}[1][Important]{%
-  \begingroup
-  \setbeamercolor{block title}{fg=white,bg=ghimportant!85!black}%
-  \setbeamercolor{block body}{fg=black,bg=ghimportantBG}%
-  \begin{block}{{\small #1}}%
-}{%
-  \end{block}%
-  \endgroup
-}
-
-\newenvironment{warning-box}[1][Warning]{%
-  \begingroup
-  \setbeamercolor{block title}{fg=white,bg=ghwarning!85!black}%
-  \setbeamercolor{block body}{fg=black,bg=ghwarningBG}%
-  \begin{block}{{\small #1}}%
-}{%
-  \end{block}%
-  \endgroup
-}
-
-\newenvironment{error-box}[1][Caution]{%
-  \begingroup
-  \setbeamercolor{block title}{fg=white,bg=gherror!85!black}%
-  \setbeamercolor{block body}{fg=black,bg=gherrorBG}%
-  \begin{block}{{\small #1}}%
-}{%
-  \end{block}%
-  \endgroup
-}
+\DeclareHSBIBeamerBox{info-box}{Note}{ghinfo!85!black}{ghinfoBG}{white}
+\DeclareHSBIBeamerBox{tip-box}{Tip}{ghtip!85!black}{ghtipBG}{white}
+\DeclareHSBIBeamerBox{important-box}{Important}{ghimportant!85!black}{ghimportantBG}{white}
+\DeclareHSBIBeamerBox{warning-box}{Warning}{ghwarning!85!black}{ghwarningBG}{white}
+\DeclareHSBIBeamerBox{error-box}{Caution}{gherror!85!black}{gherrorBG}{white}
