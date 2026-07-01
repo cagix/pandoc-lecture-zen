@@ -2,6 +2,8 @@
 %%-- Packages
 \usepackage{xcolor}
 \usepackage{framed}
+\usepackage[most]{tcolorbox}
+\tcbuselibrary{breakable,skins}
 
 
 %%-- Undefine Beamer's \pause command
@@ -26,26 +28,6 @@
 
 
 %%-- Coloured boxes
-\setlength{\FrameSep}{8pt}                              %% padding
-\setlength{\FrameRule}{2pt}                             %% width of left bar
-
-\newcommand{\AlertTitleFont}{\normalsize\bfseries}      %% alternativ: \small\bfseries
-
-\newenvironment{AlertBox}[3]{%
-  \par\addvspace{.8\baselineskip}%
-  \begingroup%
-  \def\FrameCommand{%
-    {\color{#2}\vrule width \FrameRule}\hspace{\FrameSep}%
-    \colorbox{#3}%
-  }%
-  \MakeFramed{\advance\hsize-\width \FrameRestore}%
-  \noindent{\AlertTitleFont #1}\par\medskip
-}{%
-  \endMakeFramed%
-  \par\addvspace{.4\baselineskip}%
-  \endgroup%
-}
-
 \definecolor{ghinfo}{RGB}{ 47,129,247}
 \definecolor{ghtip}{RGB}{ 26,127, 55}
 \definecolor{ghimportant}{RGB}{124, 84,216}
@@ -58,8 +40,44 @@
 \colorlet{ghwarningBG}{ghwarning!10!white}
 \colorlet{gherrorBG}{gherror!8!white}
 
-\newenvironment{info-box}[1][Note]{\begin{AlertBox}{#1}{ghinfo}{ghinfoBG}}{\end{AlertBox}}
-\newenvironment{tip-box}[1][Tip]{\begin{AlertBox}{#1}{ghtip}{ghtipBG}}{\end{AlertBox}}
-\newenvironment{important-box}[1][Important]{\begin{AlertBox}{#1}{ghimportant}{ghimportantBG}}{\end{AlertBox}}
-\newenvironment{warning-box}[1][Warning]{\begin{AlertBox}{#1}{ghwarning}{ghwarningBG}}{\end{AlertBox}}
-\newenvironment{error-box}[1][Caution]{\begin{AlertBox}{#1}{gherror}{gherrorBG}}{\end{AlertBox}}
+\tcbset{
+  hsbi-alert/.style={
+    breakable,
+    enhanced,
+    boxrule=0pt,
+    leftrule=2pt,
+    rightrule=0pt,
+    toprule=0pt,
+    bottomrule=0pt,
+    left=8pt,
+    right=8pt,
+    top=6pt,
+    bottom=6pt,
+    width=\linewidth,
+    before skip=.8\baselineskip,
+    after skip=.4\baselineskip,
+    fonttitle=\bfseries,
+    coltitle=black,
+    titlerule=0pt,
+  },
+  hsbi-alert-titleback/.style={
+    colbacktitle=\tcbcolback,
+  },
+}
+
+\newcommand{\DeclareHSBIAlertBox}[5]{%
+  %% #1 name, #2 default title, #3 frame colour, #4 background colour, #5 title background colour
+  \newtcolorbox{#1}[1][#2]{%
+    hsbi-alert,
+    colframe=#3,
+    colback=#4,
+    colbacktitle=#5,
+    title={##1},
+  }%
+}
+
+\DeclareHSBIAlertBox{info-box}{Note}{ghinfo}{ghinfoBG}{ghinfoBG}
+\DeclareHSBIAlertBox{tip-box}{Tip}{ghtip}{ghtipBG}{ghtipBG}
+\DeclareHSBIAlertBox{important-box}{Important}{ghimportant}{ghimportantBG}{ghimportantBG}
+\DeclareHSBIAlertBox{warning-box}{Warning}{ghwarning}{ghwarningBG}{ghwarningBG}
+\DeclareHSBIAlertBox{error-box}{Caution}{gherror}{gherrorBG}{gherrorBG}
