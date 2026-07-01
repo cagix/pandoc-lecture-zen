@@ -35,6 +35,7 @@
 
 \newenvironment{AlertBox}[3]{%
   \par\addvspace{.8\baselineskip}%
+  \begingroup%
   \def\FrameCommand{%
     {\color{#2}\vrule width \FrameRule}\hspace{\FrameSep}%
     \colorbox{#3}%
@@ -44,6 +45,7 @@
 }{%
   \endMakeFramed%
   \par\addvspace{.4\baselineskip}%
+  \endgroup%
 }
 
 \definecolor{ghinfo}{RGB}{ 47,129,247}
