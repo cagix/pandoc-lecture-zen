@@ -37,7 +37,7 @@ LATEX_ARGS              = -shell-escape -interaction=nonstopmode
 
 ###############################################################################
 ## docker run  -it  --name imagemagick  -v "`pwd`:/data" -w /data  --entrypoint /bin/bash  pandoc/extra:latest-ubuntu
-## > apt-update && apt-upgrade && apt-install make imagemagick
+## > apt-get update && apt-get upgrade && apt-get install make imagemagick
 ## docker stop imagemagick
 ##
 ## change $(IMAGEMAGICK) from "magick" to "convert" in this makefile for the time being
