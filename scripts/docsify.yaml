@@ -28,6 +28,7 @@ shift-heading-level-by: 1
 
 ## writer options
 strip-comments: true
+wrap: none
 
 
 ## citation rendering
