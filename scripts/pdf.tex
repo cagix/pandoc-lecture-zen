@@ -81,3 +81,17 @@
 \DeclareHSBIAlertBox{important-box}{Important}{ghimportant}{ghimportantBG}{ghimportantBG}
 \DeclareHSBIAlertBox{warning-box}{Warning}{ghwarning}{ghwarningBG}{ghwarningBG}
 \DeclareHSBIAlertBox{error-box}{Caution}{gherror}{gherrorBG}{gherrorBG}
+
+
+%%-- Provide no-op versions of pandocfootnotemark/pandocfootnotetext
+%%-- this was added to pandoc 3.14, apperently either eisvogel or pandoc-docker is not up-to-date
+%%-- to avoid license issues let's disable this nonsense for the time being
+%%-- see https://github.com/jgm/pandoc/discussions/12074
+\makeatletter
+\@ifundefined{pandocfootnotemark}{%
+  \def\pandocfootnotemark#1{}%
+}{}
+\@ifundefined{pandocfootnotetext}{%
+  \def\pandocfootnotetext#1{}%
+}{}
+\makeatother
